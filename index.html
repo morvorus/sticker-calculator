@@ -1,0 +1,215 @@
+
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Sarabun,Arial,sans-serif;background:#dfe8e0;}
+.calc-wrap{max-width:100%;margin:0 auto;}
+
+/* Header */
+.calc-header{background:#c8dece;padding:22px 24px 20px;border-radius:14px 14px 0 0;border-bottom:1px solid #b0cdb8;position:relative;overflow:hidden;}
+.calc-header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:#4a7a5c;}
+.calc-header .sub{font-size:11px;font-weight:600;color:#4a7a5c;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.calc-header h1{font-size:18px;font-weight:700;color:#1c2e24;margin:0;}
+.calc-header p{font-size:12px;color:#7aaa8a;margin:0;}
+
+/* Body */
+.calc-body{background:#f5f8f5;border:1px solid #d0ddd2;border-top:none;border-radius:0 0 14px 14px;padding:20px 18px 20px;}
+
+/* Item card */
+.item-card{border:1px solid #c8d8cc;border-radius:10px;padding:16px;background:#fff;margin-bottom:10px;}
+.item-card label{font-size:11.5px;font-weight:600;color:#6b7d72;display:block;margin-bottom:5px;letter-spacing:.2px;}
+.item-card label span{font-weight:400;font-size:10px;color:#a0ada6;}
+
+/* Row top - material select */
+.row-top{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.row-top select{flex:1;padding:8px 11px;border:1px solid #e0e4e0;border-radius:8px;font-size:13px;font-weight:500;color:#2a3d30;background:#fff;font-family:Sarabun,Arial,sans-serif;outline:none;transition:border-color .15s;}
+.row-top select:focus{border-color:#4a7a5c;}
+
+/* Delete button */
+.btn-del{width:32px;height:32px;min-width:32px;border:1px solid #e6e0e0;background:#fdf8f8;color:#b05a50;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
+.btn-del:hover{background:#faecea;}
+
+/* Size inputs */
+.size-row{display:flex;gap:10px;margin-bottom:10px;}
+.size-row>div{flex:1;}
+.field{margin-bottom:10px;}
+.inp{display:block;width:100%;padding:8px 10px;border:1px solid #e0e4e0;border-radius:8px;font-size:14px;color:#2a3d30;background:#fff;font-family:Sarabun,Arial,sans-serif;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:#4a7a5c;}
+
+/* Result box */
+.result-box{padding-top:12px;border-top:1px solid #d0ddd2;font-size:12px;color:#7a8a80;margin-top:4px;}
+.sz-line{margin-bottom:8px;line-height:1.6;color:#2a3d30;}
+.sz-line b{color:#2a3d30;}
+
+/* Lay table */
+.lay-tbl{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:11.5px;}
+.lay-tbl th{background:#e6f0e8;color:#4a7a5c;font-weight:600;padding:6px 8px;text-align:center;border:1px solid #d0ddd2;}
+.lay-tbl th.lbl{text-align:left;color:#7aa480;background:#eef4ef;}
+.lay-tbl td{padding:5px 8px;text-align:center;color:#2a3d30;border:1px solid #e0e8e2;background:#fff;}
+.lay-tbl td.lbl{text-align:left;color:#8aa494;background:#f5f8f5;font-size:11px;}
+.lay-tbl .best{background:#dff0e4;color:#2e6645;font-weight:700;}
+
+/* Use & price lines */
+.use-line{font-size:11.5px;color:#5a7a62;margin-bottom:5px;line-height:1.9;background:#e8f2eb;padding:6px 10px;border-radius:6px;}
+.use-line b{color:#3d6b52;}
+.price-line{font-size:12px;color:#7a8a80;line-height:2;}
+.price-line b{color:#2a3d30;}
+.total-line{color:#3d6b52;font-weight:700;}
+
+/* Add button */
+.btn-add{display:block;width:100%;padding:11px;background:#fff;color:#4a7a5c;font-size:13.5px;font-weight:600;border:1.5px dashed #b0ccb8;border-radius:9px;cursor:pointer;margin-bottom:18px;font-family:Sarabun,Arial,sans-serif;transition:border-color .15s,color .15s;}
+.btn-add:hover{border-color:#4a7a5c;color:#3d6b52;}
+
+/* Summary */
+.summary{border-top:1px solid #d0ddd2;padding-top:16px;}
+.sum-label{font-size:12px;font-weight:700;color:#6a9478;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+.sum-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid #e4ece5;font-size:13px;color:#7a8a80;}
+.sum-row b{font-weight:600;color:#2a3d30;white-space:nowrap;margin-left:10px;}
+.sum-row-name{font-size:12.5px;font-weight:700;color:#2a3d30;margin-bottom:1px;}
+.sum-row-sub{font-size:11px;color:#a0ada6;}
+
+/* Total bar */
+.total-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#2e5c42;border-radius:10px;margin-top:12px;}
+.total-bar span{font-size:13px;font-weight:500;color:rgba(255,255,255,0.75);}
+.total-bar strong{font-size:20px;font-weight:700;color:#fff;}
+
+.no-items{font-size:13px;color:#b0bdb5;padding:6px 0;}
+.placeholder{color:#c4cec8;font-size:12px;padding:4px 0;text-align:center;}
+</style>
+
+<div class="calc-wrap">
+  <div class="calc-header">
+    <div class="sub">ระบบคำนวณราคาสติกเกอร์</div>
+    <h1>คำนวณราคาสติกเกอร์</h1>
+
+  </div>
+  <div class="calc-body">
+    <div id="mpcItems"></div>
+    <button class="btn-add" onclick="mpcAdd()">+ เพิ่มสติกเกอร์อีกรายการ</button>
+    <div class="summary">
+      <div class="sum-label">สรุปใบเสนอราคา</div>
+      <div id="mpcSumList"><div class="no-items">ยังไม่มีรายการ</div></div>
+      <div class="total-bar">
+        <span>ราคารวมทั้งหมด</span>
+        <strong id="mpcTotal">0.00 บาท</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var mpcUID=0, mpcIDS=[];
+var mpcT={
+  'กระดาษขาวเงา':[[3.9,350],[10.9,300],[20.9,270],[1e9,229]],
+  'PP ขาวเงา':[[3.9,450],[10.9,390],[20.9,350],[1e9,249]],
+  'PP ใส':[[3.9,460],[10.9,400],[20.9,360],[1e9,269]],
+  'PP ด้าน':[[3.9,460],[10.9,400],[20.9,370],[1e9,269]]
+};
+var SW=28.8, SH=40.2, SPM=7, BL=0.2;
+var MAX_W=28.6, MAX_L=39.5;
+
+function mpcRate(mat,sqm){
+  var r=mpcT[mat]||mpcT['กระดาษขาวเงา'];
+  for(var i=0;i<r.length;i++){if(sqm<=r[i][0])return r[i][1];}
+  return r[r.length-1][1];
+}
+function mpcFmt(n){return n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function mpcClamp(id,f,max){var el=document.getElementById(f+id);if(el&&parseFloat(el.value)>max)el.value=max;mpcCalc();}
+function mpcDel(id){var el=document.getElementById('mpcRow'+id);if(el)el.parentNode.removeChild(el);mpcIDS=mpcIDS.filter(function(x){return x!==id;});mpcCalc();}
+
+function calcLay(cw,cl){
+  // Lay ตรง: cw ตามแนวสั้น(SW), cl ตามแนวยาว(SH)
+  var sLong=Math.floor(SH/cl), sShort=Math.floor(SW/cw), sTot=sLong*sShort;
+  // Lay สลับ: cl ตามแนวสั้น(SW), cw ตามแนวยาว(SH)
+  var wLong=Math.floor(SH/cw), wShort=Math.floor(SW/cl), wTot=wLong*wShort;
+  return {
+    s:{long:sLong,short:sShort,tot:sTot},
+    w:{long:wLong,short:wShort,tot:wTot},
+    best:Math.max(sTot,wTot),
+    swapWins:wTot>sTot
+  };
+}
+
+function mpcAdd(){
+  var items=document.getElementById('mpcItems');if(!items)return;
+  var id=++mpcUID;mpcIDS.push(id);
+  var d=document.createElement('div');d.id='mpcRow'+id;d.className='item-card';
+  d.innerHTML=
+    '<div class="row-top">'
+    +'<select id="mpcM'+id+'" oninput="mpcCalc()">'
+    +'<option value="กระดาษขาวเงา">สติกเกอร์ กระดาษขาวเงา</option>'
+    +'<option value="PP ขาวเงา">สติกเกอร์ PP ขาวเงา</option>'
+    +'<option value="PP ใส">สติกเกอร์ PP ใส</option>'
+    +'<option value="PP ด้าน">สติกเกอร์ PP ด้าน</option>'
+    +'</select>'
+    +'<button class="btn-del" onclick="mpcDel('+id+')">✕</button>'
+    +'</div>'
+    +'<div class="size-row">'
+    +'<div><label>กว้าง (ซม.)</label>'
+    +'<input class="inp" type="number" id="mpcW'+id+'" min="0.1" max="'+MAX_W+'" step="0.1" placeholder="0.0" oninput="mpcCalc()" onblur="mpcClamp('+id+',\'mpcW\','+MAX_W+')"></div>'
+    +'<div><label>ยาว (ซม.)</label>'
+    +'<input class="inp" type="number" id="mpcL'+id+'" min="0.1" max="'+MAX_L+'" step="0.1" placeholder="0.0" oninput="mpcCalc()" onblur="mpcClamp('+id+',\'mpcL\','+MAX_L+')"></div>'
+    +'</div>'
+    +'<div class="field"><label>จำนวน (ดวง)</label>'
+    +'<input class="inp" type="number" id="mpcQ'+id+'" min="1" step="1" value="1" oninput="mpcCalc()"></div>'
+    +'<div class="result-box" id="mpcRES'+id+'"><div class="placeholder">— กรอกขนาดเพื่อคำนวณ —</div></div>';
+  items.appendChild(d);mpcCalc();
+}
+
+function mpcCalc(){
+  var total=0,html='';
+  for(var i=0;i<mpcIDS.length;i++){
+    var id=mpcIDS[i];
+    var mEl=document.getElementById('mpcM'+id),wEl=document.getElementById('mpcW'+id);
+    var lEl=document.getElementById('mpcL'+id),qEl=document.getElementById('mpcQ'+id);
+    var resEl=document.getElementById('mpcRES'+id);
+    if(!mEl||!wEl||!lEl||!qEl||!resEl)continue;
+    var m=mEl.value,w=parseFloat(wEl.value)||0,l=parseFloat(lEl.value)||0,q=Math.max(1,parseInt(qEl.value)||1);
+    if(w<=0||l<=0){resEl.innerHTML='<div class="placeholder">— กรอกขนาดเพื่อคำนวณ —</div>';continue;}
+
+    var cw=parseFloat((w+BL).toFixed(3)), cl=parseFloat((l+BL).toFixed(3));
+    var lay=calcLay(cw,cl);
+
+    // คำนวณแผ่น/ตรม. แยกแต่ละ Lay (ตามสูตรตาราง Excel)
+    var sheets_s = (lay.s.tot>0) ? Math.ceil(q/lay.s.tot) : 0;
+    var sqm_s    = (lay.s.tot>0) ? sheets_s/SPM : 0;
+    var sheets_w = (lay.w.tot>0) ? Math.ceil(q/lay.w.tot) : 0;
+    var sqm_w    = (lay.w.tot>0) ? sheets_w/SPM : 0;
+
+    // ใช้ Lay ที่ได้ดวง/แผ่นมากที่สุด
+    var sheets=Math.ceil(q/lay.best);
+    var sqm=sheets/SPM;
+    var sqmDisplay=Math.ceil(sqm);          // ปัดขึ้นเลขกลม (แสดงผล + คิดราคา)
+    var rate=mpcRate(m,sqmDisplay);
+    var line=sqmDisplay*rate;
+
+    var sc=lay.swapWins?'':' class="best"', wc=lay.swapWins?' class="best"':'';
+    var sdpm=lay.s.tot*SPM, wdpm=lay.w.tot*SPM;
+
+    var sqmS_str = (lay.s.tot>0) ? mpcFmt(sqm_s) : '-';
+    var sqmW_str = (lay.w.tot>0) ? mpcFmt(sqm_w) : '-';
+    var shS_str  = (lay.s.tot>0) ? sheets_s : '-';
+    var shW_str  = (lay.w.tot>0) ? sheets_w : '-';
+
+    resEl.innerHTML=
+      '<div class="sz-line">ขนาดตัดจริง (บวก 2 มม.): <b>'+mpcFmt(cw)+' × '+mpcFmt(cl)+' ซม.</b></div>'
+      +'<table class="lay-tbl">'
+      +'<tr><th class="lbl"></th><th'+sc+'>Lay ตรง</th><th'+wc+'>Lay สลับ</th></tr>'
+      +'<tr><td class="lbl">ยาว (แถว)</td><td'+sc+'>'+lay.s.long+'</td><td'+wc+'>'+lay.w.long+'</td></tr>'
+      +'<tr><td class="lbl">สั้น (คอล)</td><td'+sc+'>'+lay.s.short+'</td><td'+wc+'>'+lay.w.short+'</td></tr>'
+      +'<tr><td class="lbl">ดวง/แผ่น</td><td'+sc+'>'+lay.s.tot+'</td><td'+wc+'>'+lay.w.tot+'</td></tr>'
+      +'<tr><td class="lbl">ดวง/ตรม.</td><td'+sc+'>'+sdpm+'</td><td'+wc+'>'+wdpm+'</td></tr>'
+      +'</table>'
+      +'<div class="use-line">✔ ใช้ <b>Lay '+(lay.swapWins?'สลับ':'ตรง')+'</b> &nbsp;·&nbsp; '+sheets+' แผ่น &nbsp;·&nbsp; <b>'+mpcFmt(sqmDisplay)+' ตรม.</b> &nbsp;·&nbsp; '+lay.best+' ดวง/แผ่น</div>'
+      +'<div class="price-line">ราคา/ตรม.: <b>'+mpcFmt(rate)+' บาท</b></div>'
+      +'<div class="price-line">ราคารวม: <b class="total-line">'+mpcFmt(line)+' บาท</b></div>';
+
+    total+=line;
+    html+='<div class="sum-row"><span>'+m+' ('+mpcFmt(cw)+'×'+mpcFmt(cl)+' ซม. × '+q+' ดวง)</span><b>'+mpcFmt(line)+' บาท</b></div>';
+  }
+  var sl=document.getElementById('mpcSumList'),tl=document.getElementById('mpcTotal');
+  if(sl)sl.innerHTML=mpcIDS.length?html:'<div class="no-items">ยังไม่มีรายการ</div>';
+  if(tl)tl.textContent=mpcFmt(total)+' บาท';
+}
+mpcAdd();
+</script>
