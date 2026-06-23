@@ -1,1 +1,1 @@
-# sticker-calculator
+# sticker-calculator LERTSIL
