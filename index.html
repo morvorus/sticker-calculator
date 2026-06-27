@@ -384,7 +384,7 @@ function mpcSendQuote(){
     itemLines+=(i+1)+'. '+r.name+' ขนาด '+mpcFmt(r.w)+'x'+mpcFmt(r.l)+' ซม. จำนวน '+r.q+' ดวง = '+mpcFmt(r.price)+' บาท\n';
   }
 
-  var body='ขอใบเสนอราคาสติกเกอร์\n'
+  var message='ขอใบเสนอราคาสติกเกอร์\n'
     +'=====================================\n'
     +'ชื่อ: '+name+(lastname?' '+lastname:'')+'\n'
     +'อีเมล: '+email+'\n'
@@ -394,19 +394,32 @@ function mpcSendQuote(){
     +'\nราคารวมประมาณ: '+mpcFmt(mpcGrandTotal)+' บาท\n'
     +(note?'\nหมายเหตุ: '+note:'');
 
-  var shopEmail='Ls_printing@yahoo.com';
-  var subject=encodeURIComponent('[ขอใบเสนอราคา] '+name+(lastname?' '+lastname:''));
-  var bodyEnc=encodeURIComponent(body);
-  var mailLink=document.createElement('a');
-  mailLink.href='mailto:'+shopEmail+'?subject='+subject+'&body='+bodyEnc;
-  window.open(mailLink.href, '_blank');
-
-  setTimeout(function(){
+  fetch('https://formspree.io/f/mojodbrq',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      name: name+(lastname?' '+lastname:''),
+      email: email,
+      phone: phone,
+      company: company,
+      message: message
+    })
+  })
+  .then(function(res){return res.json();})
+  .then(function(data){
     btn.disabled=false;btn.textContent='📨 ส่งคำขอใบเสนอราคา';
-    document.getElementById('mpcModalContent').style.display='none';
-    document.getElementById('mpcSuccessEmail').textContent=email;
-    document.getElementById('mpcSuccess').style.display='block';
-  },800);
+    if(data.ok){
+      document.getElementById('mpcModalContent').style.display='none';
+      document.getElementById('mpcSuccessEmail').textContent=email;
+      document.getElementById('mpcSuccess').style.display='block';
+    } else {
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+    }
+  })
+  .catch(function(){
+    btn.disabled=false;btn.textContent='📨 ส่งคำขอใบเสนอราคา';
+    alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+  });
 }
 
 mpcAdd();
