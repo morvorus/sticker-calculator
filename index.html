@@ -397,7 +397,9 @@ function mpcSendQuote(){
   var shopEmail='Ls_printing@yahoo.com';
   var subject=encodeURIComponent('[ขอใบเสนอราคา] '+name+(lastname?' '+lastname:''));
   var bodyEnc=encodeURIComponent(body);
-  window.location.href='mailto:'+shopEmail+'?subject='+subject+'&body='+bodyEnc;
+  var mailLink=document.createElement('a');
+  mailLink.href='mailto:'+shopEmail+'?subject='+subject+'&body='+bodyEnc;
+  window.open(mailLink.href, '_blank');
 
   setTimeout(function(){
     btn.disabled=false;btn.textContent='📨 ส่งคำขอใบเสนอราคา';
