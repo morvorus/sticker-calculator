@@ -1,432 +1,1058 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>คำนวณราคาสติกเกอร์ – โรงพิมพ์เลิศศิลป์</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    /* Reset สำหรับ GitHub Pages / iframe */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      font-family: Sarabun, Arial, sans-serif;
-      background: #dfe8e0;
-      margin: 0;
-      padding: 0;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เครื่องคำนวณราคา สติ๊กเกอร์ / บิลบอร์ด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0f2a4a;
+    --navy-dark:#0a1e36;
+    --blue:#1d6fd9;
+    --blue-light:#eaf2fe;
+    --orange:#f5820a;
+    --orange-dark:#d96e00;
+    --green:#1a9c6b;
+    --gray-50:#f7f8fa;
+    --gray-100:#eef1f5;
+    --gray-200:#e2e6ec;
+    --gray-400:#9aa4b2;
+    --gray-600:#5b6472;
+    --gray-800:#26303c;
+    --radius:14px;
+    --shadow:0 2px 10px rgba(15,42,74,.06), 0 1px 2px rgba(15,42,74,.08);
+    --shadow-lg:0 12px 32px rgba(15,42,74,.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Noto Sans Thai','Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:linear-gradient(180deg,#f4f7fb 0%, #eef2f8 100%);
+    color:var(--gray-800);
+    -webkit-font-smoothing:antialiased;
+  }
+  .topbar{
+    background:linear-gradient(120deg,var(--navy) 0%, var(--navy-dark) 100%);
+    color:#fff;
+    padding:22px 28px;
+  }
+  .topbar-inner{
+    max-width:1180px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand-icon{
+    width:42px;height:42px;border-radius:10px;
+    background:linear-gradient(135deg,var(--orange),#ffb347);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
+  .brand h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px;}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:#b9c8de;}
+  .topbar-actions{display:flex;gap:8px;}
+  .btn{
+    border:none;border-radius:9px;padding:10px 16px;font-size:13.5px;font-weight:600;
+    cursor:pointer;transition:.15s ease;font-family:inherit;
+  }
+  .btn-ghost{background:rgba(255,255,255,.1);color:#fff;}
+  .btn-ghost:hover{background:rgba(255,255,255,.18);}
+  .btn-primary{background:var(--orange);color:#fff;}
+  .btn-primary:hover{background:var(--orange-dark);}
+
+  .wrap{max-width:820px;margin:0 auto;padding:26px 20px 140px;}
+
+  .card{
+    background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:22px 22px 24px;margin-bottom:18px;border:1px solid var(--gray-100);
+  }
+  .card h2{
+    font-size:15px;margin:0 0 4px;color:var(--navy);display:flex;align-items:center;gap:9px;
+  }
+  .step-num{
+    width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;
+    font-size:12.5px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;
+  }
+  .card .sub{font-size:12.5px;color:var(--gray-600);margin:0 0 16px 33px;}
+
+  .option-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;}
+  .opt{
+    border:1.5px solid var(--gray-200);border-radius:11px;padding:12px 14px;cursor:pointer;
+    position:relative;background:var(--gray-50);transition:.15s ease;
+  }
+  .opt:hover{border-color:var(--blue);background:var(--blue-light);}
+  .opt input{position:absolute;opacity:0;pointer-events:none;}
+  .opt.active{border-color:var(--blue);background:var(--blue-light);box-shadow:0 0 0 3px rgba(29,111,217,.12);}
+  .opt-title{font-weight:700;font-size:13.8px;color:var(--gray-800);}
+  .opt-price{font-size:12.5px;color:var(--blue);font-weight:700;margin-top:3px;}
+  .opt-note{font-size:11.3px;color:var(--gray-600);margin-top:3px;line-height:1.4;}
+  .opt-tag{
+    display:inline-block;font-size:10.5px;background:var(--orange);color:#fff;
+    padding:1px 7px;border-radius:20px;margin-top:5px;font-weight:600;
+  }
+
+  .field-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
+  .field{flex:1;min-width:130px;}
+  .field label{display:block;font-size:12px;color:var(--gray-600);margin-bottom:5px;font-weight:600;}
+  .field input[type=text], .field input[type=number], .field input[type=password]{
+    width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:9px;
+    font-size:14px;font-family:inherit;color:var(--gray-800);background:#fff;
+  }
+  .field input:focus{outline:none;border-color:var(--blue);}
+  .field input:disabled{background:var(--gray-100);color:var(--gray-600);cursor:not-allowed;}
+  .access-code-card{background:#fbf5ea;border:1px solid #eddcb8;}
+  .access-warning{
+    margin-top:12px;padding:10px 12px;border:1px solid #D79A28;border-radius:9px;
+    background:#FFF5D6;color:#684A0A;font-size:12.5px;line-height:1.5;
+  }
+  .custom-size-box{
+    margin-top:12px;padding:14px;background:var(--gray-50);border-radius:10px;border:1.5px dashed var(--gray-200);
+  }
+  .hidden{display:none !important;}
+
+  .checkbox-row{
+    display:flex;align-items:flex-start;gap:12px;border:1.5px solid var(--gray-200);
+    border-radius:11px;padding:13px 14px;cursor:pointer;background:var(--gray-50);transition:.15s ease;
+  }
+  .checkbox-row:hover{border-color:var(--orange);background:#fff8ef;}
+  .checkbox-row.active{border-color:var(--orange);background:#fff8ef;}
+  .checkbox-row input{width:18px;height:18px;margin-top:2px;accent-color:var(--orange);flex-shrink:0;}
+  .checkbox-row .opt-title{font-size:13.8px;}
+  .checkbox-row .opt-note{margin-top:2px;}
+
+  .qty-note{font-size:11.3px;color:var(--gray-600);margin-top:6px;}
+
+  /* Cutting layout preview */
+  .cut-empty{
+    font-size:13px;color:var(--gray-600);background:var(--gray-50);border-radius:10px;
+    padding:20px;text-align:center;border:1.5px dashed var(--gray-200);
+  }
+  .cut-warn{
+    font-size:13px;color:#8a3b12;background:#fff2e6;border:1.5px solid #f5c896;
+    border-radius:10px;padding:14px 16px;line-height:1.5;
+  }
+  .cut-diagram{
+    background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;
+    padding:10px;display:flex;justify-content:center;
+  }
+  .cut-svg{width:100%;height:auto;max-height:320px;display:block;}
+  .cut-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;}
+  .cut-chip{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-600);font-weight:600;}
+  .cut-chip .sw{width:11px;height:11px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .sw-piece{background:var(--blue);}
+  .sw-waste{background:#aab0bb;}
+  .cut-chip-note{color:var(--orange-dark);}
+  .cut-stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px;
+  }
+  .cut-stat{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:10px 12px;}
+  .cut-stat .l{font-size:11px;color:var(--gray-600);font-weight:600;}
+  .cut-stat .v{font-size:15px;color:var(--navy);font-weight:800;margin-top:3px;}
+  .cut-stat-sub{font-size:10.5px;color:var(--gray-600);font-weight:600;}
+
+  /* Docked summary bar — anchored to the bottom edge instead of floating in a sidebar */
+  .bottom-bar{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    background:linear-gradient(100deg,var(--navy-dark) 0%,var(--navy) 100%);
+    box-shadow:0 -10px 30px rgba(10,20,40,.28);
+    border-top:1px solid rgba(255,255,255,.08);
+  }
+  .bottom-bar-inner{
+    max-width:820px;margin:0 auto;padding:12px 20px;
+    display:flex;align-items:center;gap:18px;
+  }
+  .bb-stats{display:flex;gap:22px;flex:1;min-width:0;}
+  .bb-stat{min-width:0;}
+  .bb-stat .l{font-size:10.5px;color:#8ea0ba;font-weight:600;letter-spacing:.2px;white-space:nowrap;}
+  .bb-stat .v{font-size:14px;color:#fff;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bb-divider{width:1px;align-self:stretch;background:rgba(255,255,255,.14);}
+  .bb-total{text-align:right;flex-shrink:0;}
+  .bb-total .l{font-size:10.5px;color:#8ea0ba;font-weight:600;letter-spacing:.2px;}
+  .bb-total .v{font-size:26px;font-weight:800;color:var(--orange);line-height:1.15;letter-spacing:.2px;}
+  .bb-total .v small{font-size:13px;font-weight:700;color:#ffcb8a;margin-left:2px;}
+  .bb-actions{display:flex;gap:8px;flex-shrink:0;}
+  .bb-actions .btn{white-space:nowrap;}
+  .bb-icon-btn{
+    width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.1);color:#fff;
+    border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .bb-icon-btn:hover{background:rgba(255,255,255,.18);}
+  @media (max-width:640px){
+    .bb-stats{display:none;}
+    .bottom-bar-inner{padding:10px 16px;}
+  }
+
+  /* Print-only quote summary (hidden on screen, shown when printing) */
+  .print-summary{display:none;}
+
+  details.admin{
+    background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-100);
+    padding:0;overflow:hidden;
+  }
+  details.admin summary{
+    list-style:none;cursor:pointer;padding:18px 22px;display:flex;align-items:center;gap:10px;
+    font-weight:700;color:var(--navy);font-size:14.5px;
+  }
+  details.admin summary::-webkit-details-marker{display:none;}
+  details.admin summary .chev{margin-left:auto;transition:.2s;color:var(--gray-400);font-size:13px;}
+  details.admin[open] summary .chev{transform:rotate(180deg);}
+  .admin-body{padding:4px 22px 22px;border-top:1px solid var(--gray-100);}
+  .admin-note{font-size:12px;color:var(--gray-600);margin:12px 0 16px;background:var(--gray-50);padding:10px 12px;border-radius:8px;}
+  .admin-group{margin-bottom:18px;}
+  .admin-group h3{font-size:12.5px;color:var(--blue);text-transform:uppercase;letter-spacing:.4px;margin:0 0 10px;}
+  .admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+  .admin-field{background:var(--gray-50);border-radius:9px;padding:9px 12px;border:1px solid var(--gray-200);}
+  .admin-field label{display:block;font-size:11.5px;color:var(--gray-600);margin-bottom:5px;}
+  .admin-field .unit-input{display:flex;align-items:center;gap:6px;}
+  .admin-field input{
+    width:100%;border:none;background:transparent;font-size:14px;font-weight:700;color:var(--gray-800);
+    padding:0;font-family:inherit;
+  }
+  .admin-field input:focus{outline:none;}
+  .admin-field .u{font-size:11px;color:var(--gray-400);white-space:nowrap;}
+  .admin-reset{font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;padding:0;font-family:inherit;}
+
+  footer{text-align:center;font-size:11.5px;color:var(--gray-400);padding:20px 0 6px;}
+
+  @media print{
+    .topbar-actions, details.admin, .btn, .bottom-bar{display:none !important;}
+    body{background:#fff;}
+    .wrap{padding-bottom:26px;}
+    .card{box-shadow:none;border:1px solid #ddd;}
+    .print-summary{
+      display:block;border:2px solid var(--navy);border-radius:12px;padding:18px 20px;margin-bottom:18px;
     }
-
-    .calc-wrap { max-width: 100%; margin: 0 auto; }
-
-    /* Header */
-    .calc-header { background: #c8dece; padding: 22px 24px 20px; border-radius: 14px 14px 0 0; border-bottom: 1px solid #b0cdb8; position: relative; overflow: hidden; }
-    .calc-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: #4a7a5c; }
-    .calc-header .sub { font-size: 11px; font-weight: 600; color: #4a7a5c; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 6px; }
-    .calc-header h1 { font-size: 18px; font-weight: 700; color: #1c2e24; margin: 0; }
-
-    /* Body */
-    .calc-body { background: #f5f8f5; border: 1px solid #d0ddd2; border-top: none; border-radius: 0 0 14px 14px; padding: 20px 18px; }
-
-    /* Item card */
-    .item-card { border: 1px solid #c8d8cc; border-radius: 10px; padding: 16px; background: #fff; margin-bottom: 10px; }
-    .item-card label { font-size: 11.5px; font-weight: 600; color: #6b7d72; display: block; margin-bottom: 5px; letter-spacing: .2px; }
-
-    /* Row top */
-    .row-top { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
-    .row-top select { flex: 1; padding: 8px 11px; border: 1px solid #e0e4e0; border-radius: 8px; font-size: 13px; font-weight: 500; color: #2a3d30; background: #fff; font-family: Sarabun, Arial, sans-serif; outline: none; transition: border-color .15s; }
-    .row-top select:focus { border-color: #4a7a5c; }
-
-    /* Delete button */
-    .btn-del { width: 32px; height: 32px; min-width: 32px; border: 1px solid #e6e0e0; background: #fdf8f8; color: #b05a50; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s; }
-    .btn-del:hover { background: #faecea; }
-
-    /* Size inputs */
-    .size-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .size-row > div { flex: 1; }
-    .field { margin-bottom: 10px; }
-    .inp { display: block; width: 100%; padding: 8px 10px; border: 1px solid #e0e4e0; border-radius: 8px; font-size: 14px; color: #2a3d30; background: #fff; font-family: Sarabun, Arial, sans-serif; outline: none; transition: border-color .15s; }
-    .inp:focus { border-color: #4a7a5c; }
-
-    /* Result box */
-    .result-box { padding-top: 12px; border-top: 1px solid #d0ddd2; font-size: 12px; color: #7a8a80; margin-top: 4px; }
-    .sz-line { margin-bottom: 8px; line-height: 1.6; color: #2a3d30; }
-
-    /* Lay table */
-    .lay-tbl { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11.5px; }
-    .lay-tbl th { background: #e6f0e8; color: #4a7a5c; font-weight: 600; padding: 6px 8px; text-align: center; border: 1px solid #d0ddd2; }
-    .lay-tbl th.lbl { text-align: left; color: #7aa480; background: #eef4ef; }
-    .lay-tbl td { padding: 5px 8px; text-align: center; color: #2a3d30; border: 1px solid #e0e8e2; background: #fff; }
-    .lay-tbl td.lbl { text-align: left; color: #8aa494; background: #f5f8f5; font-size: 11px; }
-    .lay-tbl .best { background: #dff0e4; color: #2e6645; font-weight: 700; }
-
-    /* Use & price lines */
-    .use-line { font-size: 11.5px; color: #5a7a62; margin-bottom: 5px; line-height: 1.9; background: #e8f2eb; padding: 6px 10px; border-radius: 6px; }
-    .use-line b { color: #3d6b52; }
-    .price-line { font-size: 12px; color: #7a8a80; line-height: 2; }
-    .price-line b { color: #2a3d30; }
-    .total-line { color: #3d6b52; font-weight: 700; }
-
-    /* Add button */
-    .btn-add { display: block; width: 100%; padding: 11px; background: #fff; color: #4a7a5c; font-size: 13.5px; font-weight: 600; border: 1.5px dashed #b0ccb8; border-radius: 9px; cursor: pointer; margin-bottom: 18px; font-family: Sarabun, Arial, sans-serif; transition: border-color .15s, color .15s; }
-    .btn-add:hover { border-color: #4a7a5c; color: #3d6b52; }
-
-    /* Summary */
-    .summary { border-top: 1px solid #d0ddd2; padding-top: 16px; }
-    .sum-label { font-size: 12px; font-weight: 700; color: #6a9478; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 10px; }
-    .sum-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid #e4ece5; font-size: 13px; color: #7a8a80; }
-    .sum-row b { font-weight: 600; color: #2a3d30; white-space: nowrap; margin-left: 10px; }
-
-    /* Total bar */
-    .total-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #2e5c42; border-radius: 10px; margin-top: 12px; margin-bottom: 14px; }
-    .total-bar span { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.75); }
-    .total-bar strong { font-size: 20px; font-weight: 700; color: #fff; }
-
-    /* ปุ่มขอใบเสนอราคา */
-    .btn-quote { display: block; width: 100%; padding: 14px; background: #4a7a5c; color: #fff; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; font-family: Sarabun, Arial, sans-serif; letter-spacing: .3px; transition: background .2s, transform .1s; margin-top: 4px; }
-    .btn-quote:hover { background: #3d6b52; transform: translateY(-1px); }
-    .btn-quote:active { transform: translateY(0); }
-    .btn-quote:disabled { background: #b0ccb8; cursor: not-allowed; transform: none; }
-
-    .no-items { font-size: 13px; color: #b0bdb5; padding: 6px 0; }
-    .placeholder { color: #c4cec8; font-size: 12px; padding: 4px 0; text-align: center; }
-
-    /* ===== MODAL ===== */
-    .mpc-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30,50,36,.45); z-index: 9999; align-items: center; justify-content: center; padding: 16px; }
-    .mpc-overlay.open { display: flex; }
-    .mpc-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25); position: relative; }
-    .mpc-modal-head { background: #2e5c42; padding: 20px 22px 18px; border-radius: 16px 16px 0 0; position: sticky; top: 0; z-index: 2; }
-    .mpc-modal-head h2 { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 3px; }
-    .mpc-modal-head p { font-size: 12px; color: rgba(255,255,255,.7); }
-    .mpc-modal-close { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,.15); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .mpc-modal-close:hover { background: rgba(255,255,255,.28); }
-    .mpc-modal-body { padding: 20px 22px 24px; }
-
-    /* Summary in modal */
-    .mpc-qsum { background: #f0f6f2; border-radius: 10px; padding: 14px; margin-bottom: 18px; }
-    .mpc-qsum-title { font-size: 11px; font-weight: 700; color: #6a9478; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 8px; }
-    .mpc-qsum-row { display: flex; justify-content: space-between; font-size: 12.5px; color: #2a3d30; padding: 4px 0; border-bottom: 1px solid #d8ebe0; }
-    .mpc-qsum-row:last-child { border-bottom: none; }
-    .mpc-qsum-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; color: #2e5c42; margin-top: 10px; padding-top: 10px; border-top: 2px solid #b0ccb8; }
-
-    /* Form fields in modal */
-    .mpc-field { margin-bottom: 14px; }
-    .mpc-field label { font-size: 12px; font-weight: 600; color: #4a5e52; display: block; margin-bottom: 5px; }
-    .mpc-field label span { color: #c05a40; margin-left: 2px; }
-    .mpc-inp { display: block; width: 100%; padding: 9px 12px; border: 1px solid #d0ddd2; border-radius: 8px; font-size: 13.5px; color: #2a3d30; background: #fff; font-family: Sarabun, Arial, sans-serif; outline: none; transition: border-color .15s; }
-    .mpc-inp:focus { border-color: #4a7a5c; box-shadow: 0 0 0 3px rgba(74,122,92,.12); }
-    .mpc-inp.err { border-color: #c05a40; }
-    .mpc-field-row { display: flex; gap: 10px; }
-    .mpc-field-row .mpc-field { flex: 1; }
-    .mpc-note { font-size: 11px; color: #a0ada6; margin-top: 4px; }
-
-    /* Modal footer */
-    .mpc-modal-foot { display: flex; gap: 10px; padding: 0 22px 22px; }
-    .btn-cancel { flex: 1; padding: 12px; background: #f0f2f0; color: #6b7d72; font-size: 13.5px; font-weight: 600; border: 1px solid #d0ddd2; border-radius: 9px; cursor: pointer; font-family: Sarabun, Arial, sans-serif; transition: background .15s; }
-    .btn-cancel:hover { background: #e4e8e4; }
-    .btn-send { flex: 2; padding: 12px; background: #2e5c42; color: #fff; font-size: 14px; font-weight: 700; border: none; border-radius: 9px; cursor: pointer; font-family: Sarabun, Arial, sans-serif; transition: background .2s; }
-    .btn-send:hover { background: #4a7a5c; }
-    .btn-send:disabled { background: #b0ccb8; cursor: not-allowed; }
-
-    /* Success screen */
-    .mpc-success { display: none; padding: 40px 22px; text-align: center; }
-    .mpc-success-icon { font-size: 52px; margin-bottom: 12px; }
-    .mpc-success h3 { font-size: 18px; font-weight: 700; color: #2e5c42; margin-bottom: 6px; }
-    .mpc-success p { font-size: 13px; color: #7a8a80; line-height: 1.7; }
-    .btn-close-success { margin-top: 20px; padding: 11px 32px; background: #2e5c42; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: Sarabun, Arial, sans-serif; }
-  </style>
+    .print-summary h2{font-size:15px;margin:0 0 12px;color:var(--navy);}
+    .print-summary .p-line{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:#333;}
+    .print-summary .p-total{
+      display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding-top:10px;
+      border-top:1.5px solid #ccc;
+    }
+    .print-summary .p-total .label{font-size:13.5px;font-weight:600;}
+    .print-summary .p-total .value{font-size:24px;font-weight:800;}
+  }
+</style>
 </head>
 <body>
 
-<div class="calc-wrap">
-  <div class="calc-header">
-    <div class="sub">ระบบคำนวณราคาสติกเกอร์</div>
-    <h1>คำนวณราคาสติกเกอร์</h1>
-  </div>
-  <div class="calc-body">
-    <div id="mpcItems"></div>
-    <button class="btn-add" onclick="mpcAdd()">+ เพิ่มสติกเกอร์อีกรายการ</button>
-    <div class="summary">
-      <div class="sum-label">สรุปใบเสนอราคา</div>
-      <div id="mpcSumList"><div class="no-items">ยังไม่มีรายการ</div></div>
-      <div class="total-bar">
-        <span>ราคารวมทั้งหมด</span>
-        <strong id="mpcTotal">0.00 บาท</strong>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-icon">🏷️</div>
+      <div>
+        <h1>เครื่องคำนวณราคา สติ๊กเกอร์ / บิลบอร์ด</h1>
+        <p>เลือกรายการ ระบบคำนวณราคาให้อัตโนมัติ</p>
       </div>
-      <button class="btn-quote" id="mpcBtnQuote" onclick="mpcOpenModal()" disabled>
-        📋 ขอใบเสนอราคา
-      </button>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="resetAll()">↺ เริ่มใหม่</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL -->
-<div class="mpc-overlay" id="mpcOverlay" onclick="mpcOverlayClick(event)">
-  <div class="mpc-modal" id="mpcModalBox">
-    <div class="mpc-modal-head">
-      <h2>ขอใบเสนอราคา</h2>
-      <p>กรอกข้อมูลเพื่อรับใบเสนอราคาอย่างเป็นทางการ</p>
-      <button class="mpc-modal-close" onclick="mpcCloseModal()">✕</button>
-    </div>
+<div class="wrap">
 
-    <div id="mpcModalContent">
-      <div class="mpc-modal-body">
-        <div class="mpc-qsum">
-          <div class="mpc-qsum-title">รายการที่ขอใบเสนอราคา</div>
-          <div id="mpcModalSum"></div>
-          <div class="mpc-qsum-total">
-            <span>ราคารวม (ประมาณ)</span>
-            <span id="mpcModalTotal">0.00 บาท</span>
+      <!-- ACCESS CODE (required to see the final price — same gate as the paper-cut tool) -->
+      <div class="card access-code-card">
+        <h2><span class="step-num">🔒</span>รหัสสำหรับคำนวณราคา</h2>
+        <p class="sub">กรอกรหัสให้ถูกต้องเพื่อดูราคารวมจริง</p>
+        <div class="field-row" style="margin-top:0;">
+          <div class="field" style="max-width:220px;">
+            <label for="stickerAccessCode">รหัสสำหรับคำนวณ</label>
+            <input type="password" id="stickerAccessCode" maxlength="20" autocomplete="off" spellcheck="false" placeholder="กรอกรหัส">
           </div>
         </div>
-
-        <div class="mpc-field-row">
-          <div class="mpc-field">
-            <label>ชื่อ <span>*</span></label>
-            <input class="mpc-inp" id="qName" type="text" placeholder="ชื่อของคุณ">
-          </div>
-          <div class="mpc-field">
-            <label>นามสกุล</label>
-            <input class="mpc-inp" id="qLastname" type="text" placeholder="นามสกุล">
-          </div>
-        </div>
-        <div class="mpc-field">
-          <label>อีเมล <span>*</span></label>
-          <input class="mpc-inp" id="qEmail" type="email" placeholder="example@email.com">
-          <div class="mpc-note">ใบเสนอราคาจะถูกส่งไปยังอีเมลนี้</div>
-        </div>
-        <div class="mpc-field">
-          <label>เบอร์โทรศัพท์ <span>*</span></label>
-          <input class="mpc-inp" id="qPhone" type="tel" placeholder="08x-xxx-xxxx">
-        </div>
-        <div class="mpc-field">
-          <label>ชื่อบริษัท / ร้านค้า</label>
-          <input class="mpc-inp" id="qCompany" type="text" placeholder="(ไม่บังคับ)">
-        </div>
-        <div class="mpc-field">
-          <label>หมายเหตุ / ข้อมูลเพิ่มเติม</label>
-          <textarea class="mpc-inp" id="qNote" rows="3" placeholder="เช่น ต้องการสีพิเศษ, รูปแบบการตัด, กำหนดส่ง ฯลฯ" style="resize:vertical;"></textarea>
+        <div class="access-warning" id="stickerAccessWarning" style="display:none;">
+          <b>ยังไม่แสดงราคาจริง</b> — กรุณากรอกรหัสสำหรับคำนวณให้ถูกต้อง ราคาด้านล่างเป็นเพียงตัวอย่าง (0 บาท) จนกว่าจะกรอกรหัสถูกต้อง
         </div>
       </div>
-      <div class="mpc-modal-foot">
-        <button class="btn-cancel" onclick="mpcCloseModal()">ยกเลิก</button>
-        <button class="btn-send" id="mpcBtnSend" onclick="mpcSendQuote()">📨 ส่งคำขอใบเสนอราคา</button>
+
+      <!-- STEP 1: SHEET SIZE -->
+      <div class="card">
+        <h2><span class="step-num">1</span>เลือกขนาดแผ่นใหญ่ / วัสดุ</h2>
+        <p class="sub">แผ่นวัสดุตั้งต้นที่ใช้ตัดชิ้นงานออกมา</p>
+        <div class="option-grid" id="sizeOptions">
+          <label class="opt" data-preset="pvc120">
+            <input type="radio" name="sizePreset" value="pvc120">
+            <div class="opt-title">PVC ขนาด 120×80 ซม.</div>
+            <div class="opt-note">ม้วน PVC หน้ากว้าง 120 ซม.</div>
+          </label>
+          <label class="opt" data-preset="pvc57">
+            <input type="radio" name="sizePreset" value="pvc57">
+            <div class="opt-title">PVC ขนาด 57×80 ซม.</div>
+            <div class="opt-note">ม้วน PVC หน้ากว้าง 57 ซม.</div>
+          </label>
+          <label class="opt" data-preset="ready50">
+            <input type="radio" name="sizePreset" value="ready50">
+            <div class="opt-title">สีสำเร็จ ขนาด 50×80 ซม.</div>
+            <div class="opt-note">ฟิล์มสีสำเร็จหน้ากว้าง 50 ซม.</div>
+          </label>
+          <label class="opt" data-preset="custom">
+            <input type="radio" name="sizePreset" value="custom">
+            <div class="opt-title">อื่นๆ (กำหนดเอง)</div>
+            <div class="opt-note">ระบุชื่อและขนาดเอง</div>
+          </label>
+        </div>
+
+        <div class="custom-size-box hidden" id="customSizeBox">
+          <div class="field-row">
+            <div class="field" style="flex:2;min-width:180px;">
+              <label>ชื่อวัสดุ / รายการ</label>
+              <input type="text" id="customName" placeholder="เช่น ไวนิล, โฟมบอร์ด ฯลฯ">
+            </div>
+            <div class="field">
+              <label>กว้าง (ซม.)</label>
+              <input type="number" id="customW" min="1" step="0.1" placeholder="0">
+            </div>
+            <div class="field">
+              <label>สูง (ซม.)</label>
+              <input type="number" id="customH" min="1" step="0.1" placeholder="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Locked sheet width/height kept for internal calculation only — not shown, since the size already appears on the option card above -->
+        <div class="hidden" aria-hidden="true">
+          <div class="field-row">
+            <div class="field" id="presetWField">
+              <label>กว้าง (ซม.)</label>
+              <input type="number" id="presetW" min="0.1" step="0.1" disabled>
+            </div>
+            <div class="field" id="presetHField">
+              <label>สูง (ซม.)</label>
+              <input type="number" id="presetH" min="0.1" step="0.1" disabled>
+            </div>
+          </div>
+          <p class="qty-note" id="sizeHint">* ขนาดคงที่ตามที่เลือก ต้องการกำหนดขนาดเองให้เลือก "อื่นๆ"</p>
+        </div>
+      </div>
+
+      <!-- STEP 2: JOB / CUT SIZE -->
+      <div class="card">
+        <h2><span class="step-num">2</span>ขนาดชิ้นงานที่ต้องการตัด</h2>
+        <p class="sub">ขนาดจริงของชิ้นงานที่ลูกค้าต้องการ (จะถูกตัดออกจากแผ่นใหญ่ในขั้นตอนที่ 1)</p>
+        <div class="field-row">
+          <div class="field">
+            <label>กว้าง (ซม.)</label>
+            <input type="number" id="jobW" min="0.1" step="0.1" placeholder="0" value="30">
+          </div>
+          <div class="field">
+            <label>สูง (ซม.)</label>
+            <input type="number" id="jobH" min="0.1" step="0.1" placeholder="0" value="30">
+          </div>
+          <div class="field">
+            <label>จำนวน (ชิ้น)</label>
+            <input type="number" id="qty" min="1" step="1" value="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: MATERIAL -->
+      <div class="card">
+        <h2><span class="step-num">3</span>ชนิดวัสดุพิมพ์</h2>
+        <p class="sub">ราคาต่อตารางเมตร แตกต่างกันตามชนิดวัสดุ</p>
+        <div class="option-grid" id="materialOptions"></div>
+      </div>
+
+      <!-- STEP 4: COATING -->
+      <div class="card">
+        <h2><span class="step-num">4</span>การเคลือบ</h2>
+        <p class="sub">เลือกประเภทการเคลือบผิว</p>
+        <div class="option-grid" id="coatingOptions"></div>
+      </div>
+
+      <!-- STEP 5: FINISH -->
+      <div class="card">
+        <h2><span class="step-num">5</span>ผิวเคลือบ</h2>
+        <p class="sub">เลือกลักษณะผิว ด้าน หรือ เงา</p>
+        <div class="option-grid">
+          <label class="opt" data-finish="matte">
+            <input type="radio" name="finish" value="matte">
+            <div class="opt-title">ด้าน (Matte)</div>
+          </label>
+          <label class="opt" data-finish="gloss">
+            <input type="radio" name="finish" value="gloss">
+            <div class="opt-title">เงา (Gloss)</div>
+          </label>
+        </div>
+      </div>
+
+      <!-- STEP 6: DIE-CUT -->
+      <div class="card">
+        <h2><span class="step-num">6</span>ตัดไดคัท</h2>
+        <p class="sub">ตัดตามรูปทรง (Die-Cut)</p>
+        <label class="checkbox-row" id="dieCutRow">
+          <input type="checkbox" id="dieCut">
+          <div>
+            <div class="opt-title">ต้องการตัดไดคัท</div>
+            <div class="opt-note" id="dieCutNote"></div>
+          </div>
+        </label>
+      </div>
+
+      <!-- STEP 7: BACKING -->
+      <div class="card">
+        <h2><span class="step-num">7</span>วัสดุติดพื้นหลัง / ฐาน</h2>
+        <p class="sub">พลาสวูดและอะคริลิค: ราคาต่อ ตร.ม. ต่างกันเมื่อพื้นที่ไม่เต็ม/เต็มตารางเมตร</p>
+        <div class="option-grid" id="backingOptions"></div>
+      </div>
+
+      <!-- CUTTING LAYOUT PREVIEW -->
+      <div class="card">
+        <h2>✂️ ตัวอย่างการตัด</h2>
+        <p class="sub">แสดงการวางชิ้นงานบนแผ่นใหญ่ที่เลือก เพื่อดูว่าตัดออกมาได้กี่ชิ้นต่อแผ่น</p>
+        <div id="cutPreview"></div>
+      </div>
+
+    <!-- Print-only quote block (hidden on screen, shown when printing) -->
+    <div class="print-summary">
+      <h2>📋 สรุปรายการ</h2>
+      <div class="p-line"><span>แผ่นใหญ่</span><span id="pSheet">– × – ซม.</span></div>
+      <div class="p-line"><span>ขนาดชิ้นงาน</span><span id="pSize">– × – ซม.</span></div>
+      <div class="p-line"><span>จำนวน</span><span id="pQty">1 ชิ้น</span></div>
+      <div class="p-line"><span>พื้นที่รวม</span><span id="pArea">0.00 ตร.ม.</span></div>
+      <div class="p-line"><span>ตัดได้ต่อแผ่น / จำนวนแผ่นที่ใช้</span><span id="pYield">–</span></div>
+      <div class="p-total">
+        <span class="label">ราคารวมทั้งหมด</span>
+        <span class="value" id="pTotal">0 บาท</span>
       </div>
     </div>
 
-    <div class="mpc-success" id="mpcSuccess">
-      <div class="mpc-success-icon">✅</div>
-      <h3>ส่งคำขอเรียบร้อยแล้ว!</h3>
-      <p>เราได้รับข้อมูลของคุณแล้ว<br>ทีมงานจะติดต่อกลับและส่งใบเสนอราคาไปที่อีเมล<br><b id="mpcSuccessEmail"></b><br>ภายใน 1 วันทำการ</p>
-      <button class="btn-close-success" onclick="mpcCloseModal()">ปิด</button>
+  <!-- ADMIN / BACKEND -->
+  <details class="admin" id="adminPanel">
+    <summary>⚙️ ตั้งค่าราคา (หลังบ้าน / สูตรคำนวณ)<span class="chev">▾</span></summary>
+    <div class="admin-body">
+      <p class="admin-note">แก้ไขราคาที่นี่ได้ตลอดเวลา ระบบจะคำนวณราคาใหม่ทันที (การแก้ไขนี้จะไม่ถูกบันทึกหลังปิดหน้าเว็บ)</p>
+
+      <div class="admin-group">
+        <h3>ราคาวัสดุพิมพ์ (บาท/ตร.ม.)</h3>
+        <div class="admin-grid">
+          <div class="admin-field">
+            <label>HP ขาว</label>
+            <div class="unit-input"><input type="number" id="cfg_hpWhite" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+          <div class="admin-field">
+            <label>HP ใส</label>
+            <div class="unit-input"><input type="number" id="cfg_hpClear" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+          <div class="admin-field">
+            <label>3M (ติดรถ)</label>
+            <div class="unit-input"><input type="number" id="cfg_3m" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+          <div class="admin-field">
+            <label>LG (ติดรถ)</label>
+            <div class="unit-input"><input type="number" id="cfg_lg" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-group">
+        <h3>ค่าเคลือบผิว (บาท/ตร.ม.)</h3>
+        <div class="admin-grid">
+          <div class="admin-field">
+            <label>เคลือบฟิล์ม</label>
+            <div class="unit-input"><input type="number" id="cfg_filmCoat" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+          <div class="admin-field">
+            <label>เคลือบ STK</label>
+            <div class="unit-input"><input type="number" id="cfg_stkCoat" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-group">
+        <h3>ไดคัท และ ฟิวเจอร์บอร์ด/โฟม (บาท/ตร.ม.)</h3>
+        <div class="admin-grid">
+          <div class="admin-field">
+            <label>ตัดไดคัท</label>
+            <div class="unit-input"><input type="number" id="cfg_dieCut" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+          <div class="admin-field">
+            <label>ฟิวเจอร์บอร์ด 4ซม./โฟม 5ซม.</label>
+            <div class="unit-input"><input type="number" id="cfg_futureBoard" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-group">
+        <h3>พลาสวูด (บาท/ตร.ม.)</h3>
+        <div class="admin-grid">
+          <div class="admin-field">
+            <label>ไม่เต็มตารางเมตร (เศษ)</label>
+            <div class="unit-input"><input type="number" id="cfg_plaswoodPartial" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+          <div class="admin-field">
+            <label>เต็มตารางเมตร</label>
+            <div class="unit-input"><input type="number" id="cfg_plaswoodFull" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-group">
+        <h3>อะคริลิค (บาท/ตร.ม.)</h3>
+        <div class="admin-grid">
+          <div class="admin-field">
+            <label>ไม่เต็มตารางเมตร (เศษ)</label>
+            <div class="unit-input"><input type="number" id="cfg_acrylicPartial" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+          <div class="admin-field">
+            <label>เต็มตารางเมตร</label>
+            <div class="unit-input"><input type="number" id="cfg_acrylicFull" step="1"><span class="u">บ./ตร.ม.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="admin-reset" onclick="resetPrices()">↺ คืนค่าราคาเริ่มต้น</button>
+    </div>
+  </details>
+
+  <footer>เครื่องคำนวณราคานี้เป็นเครื่องมือประมาณการ • สร้างขึ้นสำหรับใช้งานภายในร้าน</footer>
+</div>
+
+<!-- Docked summary bar -->
+<div class="bottom-bar">
+  <div class="bottom-bar-inner">
+    <div class="bb-stats">
+      <div class="bb-stat">
+        <div class="l">ขนาด</div>
+        <div class="v" id="bbSize">– × – ซม.</div>
+      </div>
+      <div class="bb-divider"></div>
+      <div class="bb-stat">
+        <div class="l">จำนวน</div>
+        <div class="v" id="bbQty">1 ชิ้น</div>
+      </div>
+      <div class="bb-divider"></div>
+      <div class="bb-stat">
+        <div class="l">พื้นที่รวม</div>
+        <div class="v" id="bbArea">0.00 ตร.ม.</div>
+      </div>
+    </div>
+    <div class="bb-total">
+      <div class="l">ราคารวมทั้งหมด</div>
+      <div class="v" id="bbTotal">0<small>บาท</small></div>
+    </div>
+    <div class="bb-actions">
+      <button class="bb-icon-btn" onclick="copySummary()" title="คัดลอกสรุป">📄</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ พิมพ์ใบเสนอราคา</button>
     </div>
   </div>
 </div>
 
 <script>
-var mpcUID=0, mpcIDS=[];
-var mpcT={
-  'กระดาษขาวเงา':[[3.9,350],[10.9,300],[20.9,270],[1e9,229]],
-  'PP ขาวเงา':[[3.9,450],[10.9,390],[20.9,350],[1e9,249]],
-  'PP ใส':[[3.9,460],[10.9,400],[20.9,360],[1e9,269]],
-  'PP ด้าน':[[3.9,460],[10.9,400],[20.9,370],[1e9,269]]
+const DEFAULT_PRICES = {
+  hpWhite: 600,
+  hpClear: 600,
+  m3: 1100,
+  lg: 850,
+  filmCoat: 100,
+  stkCoat: 250,
+  dieCut: 100,
+  futureBoard: 200,
+  plaswoodPartial: 2000,
+  plaswoodFull: 1500,
+  acrylicPartial: 4000,
+  acrylicFull: 3000,
 };
-var SW=28.8, SH=40.2, SPM=7, BL=0.2;
-var MAX_W=28.6, MAX_L=39.5;
-var mpcSummaryRows=[], mpcGrandTotal=0;
+let P = {...DEFAULT_PRICES};
 
-function mpcRate(mat,sqm){
-  var r=mpcT[mat]||mpcT['กระดาษขาวเงา'];
-  for(var i=0;i<r.length;i++){if(sqm<=r[i][0])return r[i][1];}
-  return r[r.length-1][1];
+const SIZE_PRESETS = {
+  pvc120: {w:120, h:80},
+  pvc57: {w:57, h:80},
+  ready50: {w:50, h:80},
+};
+
+const MATERIALS = [
+  {key:'hpWhite', title:'HP ขาว', note:'อายุการใช้งาน 6 เดือน – 1 ปี', tag:null},
+  {key:'hpClear', title:'HP ใส', note:'อายุการใช้งาน 6 เดือน – 1 ปี', tag:null},
+  {key:'m3', title:'3M', note:'อายุการใช้งาน 2–3 ปี', tag:'ติดรถ'},
+  {key:'lg', title:'LG', note:'อายุการใช้งาน 1–2 ปี', tag:'ติดรถ'},
+];
+
+const COATINGS = [
+  {key:'none', title:'ไม่เคลือบ', priceKey:null, note:'ไม่มีค่าใช้จ่ายเพิ่ม'},
+  {key:'film', title:'เคลือบฟิล์ม', priceKey:'filmCoat', note:null},
+  {key:'stk', title:'เคลือบ STK', priceKey:'stkCoat', note:null},
+];
+
+const BACKINGS = [
+  {key:'none', title:'ไม่มี', note:'ไม่ติดพื้นหลัง/ฐาน'},
+  {key:'futureBoard', title:'ฟิวเจอร์บอร์ด 4 ซม. / โฟม 5 ซม.', note:null},
+  {key:'plaswood', title:'พลาสวูด', note:null},
+  {key:'acrylic', title:'อะคริลิค', note:null},
+];
+
+function fmt(n){
+  return Math.round(n).toLocaleString('th-TH');
 }
-function mpcFmt(n){return n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function mpcFmtInt(n){return Math.round(n).toLocaleString('th-TH');}
-function mpcFmt1(n){return n.toLocaleString('th-TH',{minimumFractionDigits:1,maximumFractionDigits:1});}
-function mpcClamp(id,f,max){var el=document.getElementById(f+id);if(el&&parseFloat(el.value)>max)el.value=max;mpcCalc();}
-function mpcDel(id){var el=document.getElementById('mpcRow'+id);if(el)el.parentNode.removeChild(el);mpcIDS=mpcIDS.filter(function(x){return x!==id;});mpcCalc();}
-
-function calcLay(cw,cl){
-  var sLong=Math.floor(SH/cl),sShort=Math.floor(SW/cw),sTot=sLong*sShort;
-  var wLong=Math.floor(SH/cw),wShort=Math.floor(SW/cl),wTot=wLong*wShort;
-  return{s:{long:sLong,short:sShort,tot:sTot},w:{long:wLong,short:wShort,tot:wTot},best:Math.max(sTot,wTot),swapWins:wTot>sTot};
-}
-
-function mpcAdd(){
-  var items=document.getElementById('mpcItems');if(!items)return;
-  var id=++mpcUID;mpcIDS.push(id);
-  var d=document.createElement('div');d.id='mpcRow'+id;d.className='item-card';
-  d.innerHTML=
-    '<div class="row-top">'
-    +'<select id="mpcM'+id+'" oninput="mpcCalc()">'
-    +'<option value="กระดาษขาวเงา">สติกเกอร์ กระดาษขาวเงา</option>'
-    +'<option value="PP ขาวเงา">สติกเกอร์ PP ขาวเงา</option>'
-    +'<option value="PP ใส">สติกเกอร์ PP ใส</option>'
-    +'<option value="PP ด้าน">สติกเกอร์ PP ด้าน</option>'
-    +'</select>'
-    +'<button class="btn-del" onclick="mpcDel('+id+')">✕</button>'
-    +'</div>'
-    +'<div class="size-row">'
-    +'<div><label>กว้าง (ซม.)</label>'
-    +'<input class="inp" type="number" id="mpcW'+id+'" min="0.1" max="'+MAX_W+'" step="0.1" placeholder="0.0" oninput="mpcCalc()" onblur="mpcClamp('+id+',\'mpcW\','+MAX_W+')"></div>'
-    +'<div><label>ยาว (ซม.)</label>'
-    +'<input class="inp" type="number" id="mpcL'+id+'" min="0.1" max="'+MAX_L+'" step="0.1" placeholder="0.0" oninput="mpcCalc()" onblur="mpcClamp('+id+',\'mpcL\','+MAX_L+')"></div>'
-    +'</div>'
-    +'<div class="field"><label>จำนวน (ดวง)</label>'
-    +'<input class="inp" type="number" id="mpcQ'+id+'" min="1" step="1" value="1" oninput="mpcCalc()"></div>'
-    +'<div class="result-box" id="mpcRES'+id+'"><div class="placeholder">— กรอกขนาดเพื่อคำนวณ —</div></div>';
-  items.appendChild(d);mpcCalc();
+function fmt2(n){
+  return n.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
-function mpcCalc(){
-  var total=0,html='',rows=[];
-  for(var i=0;i<mpcIDS.length;i++){
-    var id=mpcIDS[i];
-    var mEl=document.getElementById('mpcM'+id),wEl=document.getElementById('mpcW'+id);
-    var lEl=document.getElementById('mpcL'+id),qEl=document.getElementById('mpcQ'+id);
-    var resEl=document.getElementById('mpcRES'+id);
-    if(!mEl||!wEl||!lEl||!qEl||!resEl)continue;
-    var m=mEl.value,w=parseFloat(wEl.value)||0,l=parseFloat(lEl.value)||0,q=Math.max(1,parseInt(qEl.value)||1);
-    if(w<=0||l<=0){resEl.innerHTML='<div class="placeholder">— กรอกขนาดเพื่อคำนวณ —</div>';continue;}
-
-    var cw=parseFloat((w+BL).toFixed(3)),cl=parseFloat((l+BL).toFixed(3));
-    var lay=calcLay(cw,cl);
-    var sheets=Math.ceil(q/lay.best);
-    var sqm=sheets/SPM;
-    var sqmDisplay=Math.ceil(sqm);
-    var rate=mpcRate(m,sqm);
-    var line=sqmDisplay*rate;
-
-    var sc=lay.swapWins?'':' class="best"',wc=lay.swapWins?' class="best"':'';
-    var sdpm=lay.s.tot*SPM,wdpm=lay.w.tot*SPM;
-    var dpm=lay.swapWins?wdpm:sdpm;
-
-    resEl.innerHTML=
-      '<div class="sz-line">ขนาดตัดจริง (บวก 2 มม.): <b>'+mpcFmt(cw)+' × '+mpcFmt(cl)+' ซม.</b></div>'
-      +'<table class="lay-tbl">'
-      +'<tr><th class="lbl"></th><th'+sc+'>Lay ตรง</th><th'+wc+'>Lay สลับ</th></tr>'
-      +'<tr><td class="lbl">ยาว (แถว)</td><td'+sc+'>'+lay.s.long+'</td><td'+wc+'>'+lay.w.long+'</td></tr>'
-      +'<tr><td class="lbl">สั้น (คอล)</td><td'+sc+'>'+lay.s.short+'</td><td'+wc+'>'+lay.w.short+'</td></tr>'
-      +'<tr><td class="lbl">ดวง/แผ่น</td><td'+sc+'>'+lay.s.tot+'</td><td'+wc+'>'+lay.w.tot+'</td></tr>'
-      +'<tr><td class="lbl">ดวง/ตรม.</td><td'+sc+'>'+sdpm+'</td><td'+wc+'>'+wdpm+'</td></tr>'
-      +'</table>'
-      +'<div class="use-line">✔ ใช้ <b>Lay '+(lay.swapWins?'สลับ':'ตรง')+'</b> &nbsp;·&nbsp; '+sheets+' แผ่น &nbsp;·&nbsp; <b>'+mpcFmt(sqmDisplay)+' ตรม.</b> &nbsp;·&nbsp; '+lay.best+' ดวง/แผ่น</div>'
-      +'<div class="use-line">📐 สติกเกอร์<b>'+m+'</b> ขนาด <b>'+mpcFmt(cw)+' × '+mpcFmt(cl)+' ซม.</b><div style="text-align:center;margin-top:8px;padding:8px 10px;background:#fff;border:1.5px solid #4a7a5c;border-radius:8px;"><b style="font-size:15px;color:#2e5c42;">'+mpcFmt(sqm)+' ตรม. ได้ '+mpcFmtInt(dpm*sqm)+' ดวง</b></div></div>'
-      +'<div class="price-line">ราคา/ตรม.: <b>'+mpcFmt(rate)+' บาท</b></div>'
-      +'<div class="price-line">ราคารวม: <b class="total-line">'+mpcFmt(line)+' บาท</b></div>';
-
-    total+=line;
-    html+='<div class="sum-row"><span>'+m+' ('+mpcFmt(cw)+'×'+mpcFmt(cl)+' ซม. × '+q+' ดวง)</span><b>'+mpcFmt(line)+' บาท</b></div>';
-    rows.push({name:m,w:cw,l:cl,q:q,price:line});
-  }
-
-  mpcSummaryRows=rows;
-  mpcGrandTotal=total;
-
-  var sl=document.getElementById('mpcSumList'),tl=document.getElementById('mpcTotal');
-  if(sl)sl.innerHTML=mpcIDS.length?html:'<div class="no-items">ยังไม่มีรายการ</div>';
-  if(tl)tl.textContent=mpcFmt(total)+' บาท';
-
-  var btn=document.getElementById('mpcBtnQuote');
-  if(btn)btn.disabled=(rows.length===0||total===0);
+function renderMaterials(){
+  const el = document.getElementById('materialOptions');
+  el.innerHTML = MATERIALS.map((m,i)=>`
+    <label class="opt" data-material="${m.key}">
+      <input type="radio" name="material" value="${m.key}" ${i===0?'checked':''}>
+      <div class="opt-title">${m.title}</div>
+      <div class="opt-note">${m.note}</div>
+      ${m.tag ? `<span class="opt-tag">${m.tag}</span>` : ''}
+    </label>
+  `).join('');
 }
 
-function mpcOpenModal(){
-  var sumHtml='';
-  for(var i=0;i<mpcSummaryRows.length;i++){
-    var r=mpcSummaryRows[i];
-    sumHtml+='<div class="mpc-qsum-row"><span>'+r.name+' '+mpcFmt(r.w)+'×'+mpcFmt(r.l)+' ซม. ×'+r.q+' ดวง</span><span>'+mpcFmt(r.price)+' บาท</span></div>';
-  }
-  document.getElementById('mpcModalSum').innerHTML=sumHtml;
-  document.getElementById('mpcModalTotal').textContent=mpcFmt(mpcGrandTotal)+' บาท';
-  document.getElementById('mpcModalContent').style.display='';
-  document.getElementById('mpcSuccess').style.display='none';
-  ['qName','qEmail','qPhone'].forEach(function(id){
-    var el=document.getElementById(id);if(el)el.classList.remove('err');
+function renderCoatings(){
+  const el = document.getElementById('coatingOptions');
+  el.innerHTML = COATINGS.map((c,i)=>{
+    return `
+    <label class="opt" data-coating="${c.key}">
+      <input type="radio" name="coating" value="${c.key}" ${i===0?'checked':''}>
+      <div class="opt-title">${c.title}</div>
+    </label>`;
+  }).join('');
+}
+
+function renderBackings(){
+  const el = document.getElementById('backingOptions');
+  el.innerHTML = BACKINGS.map((b,i)=>{
+    return `
+    <label class="opt" data-backing="${b.key}">
+      <input type="radio" name="backing" value="${b.key}" ${i===0?'checked':''}>
+      <div class="opt-title">${b.title}</div>
+      ${b.note ? `<div class="opt-note">${b.note}</div>` : ''}
+    </label>`;
+  }).join('');
+}
+
+function updateDieCutNote(){
+  document.getElementById('dieCutNote').textContent = 'ตัดตามรูปทรงชิ้นงาน';
+}
+
+function isWholeSqm(v){
+  return Math.abs(v - Math.round(v)) < 0.005;
+}
+
+function getActiveOptGroup(name){
+  const input = document.querySelector(`input[name="${name}"]:checked`);
+  return input ? input.value : null;
+}
+
+function updateActiveClasses(){
+  document.querySelectorAll('.opt').forEach(opt=>{
+    const input = opt.querySelector('input');
+    if(input && input.checked) opt.classList.add('active');
+    else opt.classList.remove('active');
   });
-  document.getElementById('mpcOverlay').classList.add('open');
-  document.body.style.overflow='hidden';
+  const dieCutRow = document.getElementById('dieCutRow');
+  const dieCutChecked = document.getElementById('dieCut').checked;
+  dieCutRow.classList.toggle('active', dieCutChecked);
 }
 
-function mpcCloseModal(){
-  document.getElementById('mpcOverlay').classList.remove('open');
-  document.body.style.overflow='';
+function applySizePreset(){
+  const preset = getActiveOptGroup('sizePreset');
+  const customBox = document.getElementById('customSizeBox');
+  const presetWField = document.getElementById('presetWField');
+  const presetHField = document.getElementById('presetHField');
+  const presetW = document.getElementById('presetW');
+  const presetH = document.getElementById('presetH');
+  const sizeHint = document.getElementById('sizeHint');
+
+  if(preset === 'custom'){
+    customBox.classList.remove('hidden');
+    presetWField.classList.add('hidden');
+    presetHField.classList.add('hidden');
+    sizeHint.textContent = '* กำหนดชื่อและขนาดได้อิสระ';
+  } else if(preset && SIZE_PRESETS[preset]){
+    customBox.classList.add('hidden');
+    presetWField.classList.remove('hidden');
+    presetHField.classList.remove('hidden');
+    presetW.value = SIZE_PRESETS[preset].w;
+    presetH.value = SIZE_PRESETS[preset].h;
+    sizeHint.textContent = '* ขนาดคงที่ตามที่เลือก ต้องการกำหนดขนาดเองให้เลือก "อื่นๆ"';
+  } else {
+    customBox.classList.add('hidden');
+    presetWField.classList.remove('hidden');
+    presetHField.classList.remove('hidden');
+  }
 }
 
-function mpcOverlayClick(e){
-  if(e.target===document.getElementById('mpcOverlay'))mpcCloseModal();
+function getSheetWH(){
+  const preset = getActiveOptGroup('sizePreset');
+  if(preset === 'custom'){
+    return {
+      w: parseFloat(document.getElementById('customW').value) || 0,
+      h: parseFloat(document.getElementById('customH').value) || 0,
+      name: document.getElementById('customName').value || 'กำหนดเอง'
+    };
+  }
+  const w = parseFloat(document.getElementById('presetW').value) || 0;
+  const h = parseFloat(document.getElementById('presetH').value) || 0;
+  const label = preset && SIZE_PRESETS[preset] ? sheetPresetLabel(preset) : 'กำหนดเอง';
+  return {w, h, name: label};
 }
 
-function mpcValidate(){
-  var ok=true;
-  var fields=[
-    {id:'qName',check:function(v){return v.trim().length>0;}},
-    {id:'qEmail',check:function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());}},
-    {id:'qPhone',check:function(v){return v.trim().replace(/[-\s]/g,'').length>=9;}}
-  ];
-  fields.forEach(function(f){
-    var el=document.getElementById(f.id);if(!el)return;
-    if(!f.check(el.value)){el.classList.add('err');ok=false;}
-    else el.classList.remove('err');
-  });
-  return ok;
+function sheetPresetLabel(preset){
+  const map = {pvc120:'PVC 120×80', pvc57:'PVC 57×80', ready50:'สีสำเร็จ 50×80'};
+  return map[preset] || '';
 }
 
-function mpcSendQuote(){
-  if(!mpcValidate())return;
-  var btn=document.getElementById('mpcBtnSend');
-  btn.disabled=true;btn.textContent='กำลังส่ง...';
+function getJobWH(){
+  return {
+    w: parseFloat(document.getElementById('jobW').value) || 0,
+    h: parseFloat(document.getElementById('jobH').value) || 0,
+  };
+}
 
-  var name=document.getElementById('qName').value.trim();
-  var lastname=document.getElementById('qLastname').value.trim();
-  var email=document.getElementById('qEmail').value.trim();
-  var phone=document.getElementById('qPhone').value.trim();
-  var company=document.getElementById('qCompany').value.trim();
-  var note=document.getElementById('qNote').value.trim();
+// Simple grid-nesting: try the piece in its given orientation and rotated 90°,
+// pick whichever fits more copies onto the sheet (a standard guillotine-cut approximation).
+function computeNesting(sheet, job){
+  if(!sheet.w || !sheet.h || !job.w || !job.h){
+    return {cols:0, rows:0, rotated:false, perSheet:0, fits:false};
+  }
+  const colsA = Math.floor(sheet.w / job.w);
+  const rowsA = Math.floor(sheet.h / job.h);
+  const countA = colsA * rowsA;
 
-  var itemLines='';
-  for(var i=0;i<mpcSummaryRows.length;i++){
-    var r=mpcSummaryRows[i];
-    itemLines+=(i+1)+'. '+r.name+' ขนาด '+mpcFmt(r.w)+'x'+mpcFmt(r.l)+' ซม. จำนวน '+r.q+' ดวง = '+mpcFmt(r.price)+' บาท\n';
+  const colsB = Math.floor(sheet.w / job.h);
+  const rowsB = Math.floor(sheet.h / job.w);
+  const countB = colsB * rowsB;
+
+  if(countA === 0 && countB === 0){
+    return {cols:0, rows:0, rotated:false, perSheet:0, fits:false};
+  }
+  if(countB > countA){
+    return {cols:colsB, rows:rowsB, rotated:true, perSheet:countB, fits:true};
+  }
+  return {cols:colsA, rows:rowsA, rotated:false, perSheet:countA, fits:true};
+}
+
+function renderCutPreview(sheet, job, qty){
+  const el = document.getElementById('cutPreview');
+  if(!sheet.w || !sheet.h){
+    el.innerHTML = `<p class="cut-empty">เลือกขนาดแผ่นใหญ่ในขั้นตอนที่ 1 ก่อน</p>`;
+    return;
+  }
+  if(!job.w || !job.h){
+    el.innerHTML = `<p class="cut-empty">กรอกขนาดชิ้นงานที่ต้องการตัดในขั้นตอนที่ 2</p>`;
+    return;
   }
 
-  var message='ขอใบเสนอราคาสติกเกอร์\n'
-    +'=====================================\n'
-    +'ชื่อ: '+name+(lastname?' '+lastname:'')+'\n'
-    +'อีเมล: '+email+'\n'
-    +'โทร: '+phone+'\n'
-    +(company?'บริษัท: '+company+'\n':'')
-    +'\nรายการสินค้า:\n'+itemLines
-    +'\nราคารวมประมาณ: '+mpcFmt(mpcGrandTotal)+' บาท\n'
-    +(note?'\nหมายเหตุ: '+note:'');
+  const nest = computeNesting(sheet, job);
 
-  fetch('https://formspree.io/f/mojodbrq',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({
-      name: name+(lastname?' '+lastname:''),
-      email: email,
-      phone: phone,
-      company: company,
-      message: message
-    })
-  })
-  .then(function(res){return res.json();})
-  .then(function(data){
-    btn.disabled=false;btn.textContent='📨 ส่งคำขอใบเสนอราคา';
-    if(data.ok){
-      document.getElementById('mpcModalContent').style.display='none';
-      document.getElementById('mpcSuccessEmail').textContent=email;
-      document.getElementById('mpcSuccess').style.display='block';
-    } else {
-      alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+  if(!nest.fits){
+    el.innerHTML = `
+      <div class="cut-warn">⚠️ ขนาดชิ้นงาน (${job.w}×${job.h} ซม.) ใหญ่กว่าแผ่นวัสดุ (${sheet.w}×${sheet.h} ซม.) ไม่สามารถตัดได้ กรุณาปรับขนาด</div>`;
+    return;
+  }
+
+  const pieceW = nest.rotated ? job.h : job.w;
+  const pieceH = nest.rotated ? job.w : job.h;
+  const usedW = nest.cols * pieceW;
+  const usedH = nest.rows * pieceH;
+  const sheetsNeeded = Math.ceil(qty / nest.perSheet);
+  const wasteAreaPct = 100 - ((usedW*usedH)/(sheet.w*sheet.h))*100;
+
+  // scale the sheet to fit a fixed drawing box
+  const boxW = 560, boxH = 340, pad = 16;
+  const scale = Math.min((boxW-pad*2)/sheet.w, (boxH-pad*2)/sheet.h);
+  const drawW = sheet.w*scale, drawH = sheet.h*scale;
+  const offX = (boxW - drawW)/2, offY = (boxH - drawH)/2;
+
+  let rects = '';
+  for(let r=0;r<nest.rows;r++){
+    for(let c=0;c<nest.cols;c++){
+      const x = offX + c*pieceW*scale;
+      const y = offY + r*pieceH*scale;
+      rects += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(pieceW*scale).toFixed(1)}" height="${(pieceH*scale).toFixed(1)}"
+        fill="#eaf2fe" stroke="#1d6fd9" stroke-width="1.5" rx="2"/>`;
     }
-  })
-  .catch(function(){
-    btn.disabled=false;btn.textContent='📨 ส่งคำขอใบเสนอราคา';
-    alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+  }
+  // label the first piece with its dimensions if there's room
+  if(pieceW*scale > 34 && pieceH*scale > 18){
+    rects += `<text x="${(offX+pieceW*scale/2).toFixed(1)}" y="${(offY+pieceH*scale/2+4).toFixed(1)}"
+      text-anchor="middle" font-size="10.5" font-weight="700" fill="#1d6fd9">${job.w}×${job.h}</text>`;
+  }
+
+  // waste hatch: right strip + bottom strip
+  let waste = '';
+  if(sheet.w - (usedW) > 0.01){
+    const wx = offX + usedW*scale, ww = drawW - usedW*scale;
+    waste += `<rect x="${wx.toFixed(1)}" y="${offY.toFixed(1)}" width="${ww.toFixed(1)}" height="${drawH.toFixed(1)}" fill="url(#hatch)" stroke="#c7ccd4" stroke-width="1"/>`;
+  }
+  if(sheet.h - (usedH) > 0.01){
+    const wy = offY + usedH*scale, wh = drawH - usedH*scale;
+    waste += `<rect x="${offX.toFixed(1)}" y="${wy.toFixed(1)}" width="${drawW.toFixed(1)}" height="${wh.toFixed(1)}" fill="url(#hatch)" stroke="#c7ccd4" stroke-width="1"/>`;
+  }
+
+  el.innerHTML = `
+    <div class="cut-diagram">
+      <svg viewBox="0 0 ${boxW} ${boxH}" class="cut-svg" role="img" aria-label="ตัวอย่างการตัดชิ้นงานจากแผ่นใหญ่">
+        <defs>
+          <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+            <rect width="7" height="7" fill="#f3f4f6"/>
+            <line x1="0" y1="0" x2="0" y2="7" stroke="#d7dbe1" stroke-width="2"/>
+          </pattern>
+        </defs>
+        <rect x="${offX.toFixed(1)}" y="${offY.toFixed(1)}" width="${drawW.toFixed(1)}" height="${drawH.toFixed(1)}" fill="#fff" stroke="#26303c" stroke-width="2" rx="3"/>
+        ${waste}
+        ${rects}
+      </svg>
+    </div>
+    <div class="cut-legend">
+      <span class="cut-chip"><i class="sw sw-piece"></i>ชิ้นงาน (ตัดใช้ได้)</span>
+      <span class="cut-chip"><i class="sw sw-waste"></i>เศษที่เหลือ</span>
+      ${nest.rotated ? `<span class="cut-chip cut-chip-note">🔄 หมุนชิ้นงาน 90° เพื่อให้ได้จำนวนมากที่สุด</span>` : ''}
+    </div>
+    <div class="cut-stats">
+      <div class="cut-stat"><div class="l">แผ่นใหญ่</div><div class="v">${sheet.w}×${sheet.h} ซม.</div></div>
+      <div class="cut-stat"><div class="l">ชิ้นงาน</div><div class="v">${job.w}×${job.h} ซม.</div></div>
+      <div class="cut-stat"><div class="l">ตัดได้ / แผ่น</div><div class="v">${nest.perSheet} ชิ้น</div></div>
+      <div class="cut-stat"><div class="l">ต้องใช้</div><div class="v">${sheetsNeeded} แผ่น <span class="cut-stat-sub">(สำหรับ ${qty} ชิ้น)</span></div></div>
+      <div class="cut-stat"><div class="l">เศษเหลือ</div><div class="v">${wasteAreaPct.toFixed(0)}% ของแผ่น</div></div>
+    </div>
+  `;
+
+  return {perSheet: nest.perSheet, sheetsNeeded};
+}
+
+const ACCESS_CODE = 'jan';
+function hasValidAccessCode(){
+  const el = document.getElementById('stickerAccessCode');
+  return !!el && el.value.trim().toLowerCase() === ACCESS_CODE;
+}
+
+function compute(){
+  applySizePreset();
+  updateActiveClasses();
+
+  const sheet = getSheetWH();
+  const job = getJobWH();
+  const qty = Math.max(1, parseInt(document.getElementById('qty').value) || 1);
+  const w = job.w, h = job.h;
+  const pieceAreaSqm = (w/100) * (h/100);
+  const totalSqm = pieceAreaSqm * qty;
+
+  const yieldInfo = renderCutPreview(sheet, job, qty);
+
+  // material cost
+  const materialKey = getActiveOptGroup('material') || 'hpWhite';
+  const materialRate = P[materialKey] || 0;
+  const materialCost = totalSqm * materialRate;
+
+  // coating cost
+  const coatingKey = getActiveOptGroup('coating') || 'none';
+  const coatingObj = COATINGS.find(c=>c.key===coatingKey);
+  const coatingRate = coatingObj && coatingObj.priceKey ? P[coatingObj.priceKey] : 0;
+  const coatingCost = totalSqm * coatingRate;
+
+  // die-cut cost
+  const dieCutChecked = document.getElementById('dieCut').checked;
+  const dieCutCost = dieCutChecked ? totalSqm * P.dieCut : 0;
+
+  // backing cost
+  const backingKey = getActiveOptGroup('backing') || 'none';
+  let backingCost = 0;
+  let backingRateUsed = 0;
+  if(backingKey === 'futureBoard'){
+    backingRateUsed = P.futureBoard;
+    backingCost = totalSqm * backingRateUsed;
+  } else if(backingKey === 'plaswood'){
+    backingRateUsed = isWholeSqm(totalSqm) ? P.plaswoodFull : P.plaswoodPartial;
+    backingCost = totalSqm * backingRateUsed;
+  } else if(backingKey === 'acrylic'){
+    backingRateUsed = isWholeSqm(totalSqm) ? P.acrylicFull : P.acrylicPartial;
+    backingCost = totalSqm * backingRateUsed;
+  }
+
+  const total = materialCost + coatingCost + dieCutCost + backingCost;
+  const perPiece = qty > 0 ? total / qty : 0;
+  const codeOk = hasValidAccessCode();
+  const displayTotal = codeOk ? total : 0;
+
+  // render summary (only totals — no per-item price breakdown)
+  const sizeText = (w&&h) ? `${w}×${h} ซม.` : '– × – ซม.';
+  const sheetText = (sheet.w&&sheet.h) ? `${sheet.w}×${sheet.h} ซม.` : '– × – ซม.';
+  const qtyText = `${qty} ชิ้น`;
+  const areaText = `${fmt2(totalSqm)} ตร.ม.`;
+  const yieldText = yieldInfo ? `${yieldInfo.perSheet} ชิ้น/แผ่น · ใช้ ${yieldInfo.sheetsNeeded} แผ่น` : '–';
+
+  document.getElementById('bbSize').textContent = sizeText;
+  document.getElementById('bbQty').textContent = qtyText;
+  document.getElementById('bbArea').textContent = areaText;
+  document.getElementById('bbTotal').innerHTML = `${fmt(displayTotal)}<small>บาท</small>`;
+
+  document.getElementById('pSheet').textContent = sheetText;
+  document.getElementById('pSize').textContent = sizeText;
+  document.getElementById('pQty').textContent = qtyText;
+  document.getElementById('pArea').textContent = areaText;
+  document.getElementById('pYield').textContent = yieldText;
+  document.getElementById('pTotal').textContent = `${fmt(displayTotal)} บาท`;
+
+  const warningEl = document.getElementById('stickerAccessWarning');
+  if (warningEl) warningEl.style.display = codeOk ? 'none' : 'block';
+
+  window._lastCalc = {w,h,qty,totalSqm,sheet,materialKey,materialCost,coatingKey,coatingCost,dieCutChecked,dieCutCost,backingKey,backingCost,total:displayTotal,perPiece,yieldInfo,codeOk};
+}
+
+function bindEvents(){
+  document.querySelectorAll('input[name="sizePreset"]').forEach(r=>{
+    r.addEventListener('change', compute);
+  });
+  ['customW','customH','customName','jobW','jobH'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', compute);
+  });
+  document.getElementById('qty').addEventListener('input', compute);
+  document.getElementById('dieCut').addEventListener('change', compute);
+  document.getElementById('stickerAccessCode').addEventListener('input', compute);
+
+  document.body.addEventListener('change', (e)=>{
+    if(e.target.name === 'material' || e.target.name === 'coating' || e.target.name === 'backing' || e.target.name === 'finish'){
+      compute();
+    }
+  });
+
+  // allow ด้าน/เงา (finish) to be deselected by clicking the already-selected option again
+  document.querySelectorAll('.opt[data-finish]').forEach(label=>{
+    const input = label.querySelector('input[name="finish"]');
+    label.addEventListener('mousedown', function(){
+      label._preChecked = input.checked;
+    });
+    label.addEventListener('click', function(e){
+      if(label._preChecked){
+        e.preventDefault();
+        input.checked = false;
+        compute();
+      }
+    });
+  });
+
+  // admin fields
+  const adminMap = {
+    cfg_hpWhite:'hpWhite', cfg_hpClear:'hpClear', cfg_3m:'m3', cfg_lg:'lg',
+    cfg_filmCoat:'filmCoat', cfg_stkCoat:'stkCoat', cfg_dieCut:'dieCut',
+    cfg_futureBoard:'futureBoard', cfg_plaswoodPartial:'plaswoodPartial', cfg_plaswoodFull:'plaswoodFull',
+    cfg_acrylicPartial:'acrylicPartial', cfg_acrylicFull:'acrylicFull'
+  };
+  Object.entries(adminMap).forEach(([id,key])=>{
+    document.getElementById(id).addEventListener('input', ()=>{
+      const val = parseFloat(document.getElementById(id).value);
+      P[key] = isNaN(val) ? 0 : val;
+      const prevMaterial = getActiveOptGroup('material');
+      const prevCoating = getActiveOptGroup('coating');
+      const prevBacking = getActiveOptGroup('backing');
+      renderMaterials();
+      renderCoatings();
+      renderBackings();
+      updateDieCutNote();
+      restoreSelection('material', prevMaterial);
+      restoreSelection('coating', prevCoating);
+      restoreSelection('backing', prevBacking);
+      compute();
+    });
   });
 }
 
-mpcAdd();
+function restoreSelection(name, value){
+  if(!value) return;
+  const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+  if(el) el.checked = true;
+}
+
+function loadAdminFields(){
+  document.getElementById('cfg_hpWhite').value = P.hpWhite;
+  document.getElementById('cfg_hpClear').value = P.hpClear;
+  document.getElementById('cfg_3m').value = P.m3;
+  document.getElementById('cfg_lg').value = P.lg;
+  document.getElementById('cfg_filmCoat').value = P.filmCoat;
+  document.getElementById('cfg_stkCoat').value = P.stkCoat;
+  document.getElementById('cfg_dieCut').value = P.dieCut;
+  document.getElementById('cfg_futureBoard').value = P.futureBoard;
+  document.getElementById('cfg_plaswoodPartial').value = P.plaswoodPartial;
+  document.getElementById('cfg_plaswoodFull').value = P.plaswoodFull;
+  document.getElementById('cfg_acrylicPartial').value = P.acrylicPartial;
+  document.getElementById('cfg_acrylicFull').value = P.acrylicFull;
+}
+
+function resetPrices(){
+  P = {...DEFAULT_PRICES};
+  loadAdminFields();
+  const prevMaterial = getActiveOptGroup('material');
+  const prevCoating = getActiveOptGroup('coating');
+  const prevBacking = getActiveOptGroup('backing');
+  renderMaterials();
+  renderCoatings();
+  renderBackings();
+  updateDieCutNote();
+  restoreSelection('material', prevMaterial);
+  restoreSelection('coating', prevCoating);
+  restoreSelection('backing', prevBacking);
+  compute();
+}
+
+function resetAll(){
+  document.querySelectorAll('input[name="sizePreset"]').forEach(r=>r.checked=false);
+  document.getElementById('customW').value='';
+  document.getElementById('customH').value='';
+  document.getElementById('customName').value='';
+  document.getElementById('presetW').value='';
+  document.getElementById('presetH').value='';
+  document.getElementById('jobW').value='30';
+  document.getElementById('jobH').value='30';
+  document.getElementById('qty').value=1;
+  document.querySelectorAll('input[name="material"]')[0].checked = true;
+  document.querySelectorAll('input[name="coating"]')[0].checked = true;
+  document.querySelectorAll('input[name="backing"]')[0].checked = true;
+  document.querySelectorAll('input[name="finish"]').forEach(r=>r.checked=false);
+  document.getElementById('dieCut').checked = false;
+  compute();
+}
+
+function copySummary(){
+  const c = window._lastCalc;
+  if(!c) return;
+  const materialTitle = MATERIALS.find(m=>m.key===c.materialKey)?.title || c.materialKey;
+  const coatingTitle = COATINGS.find(x=>x.key===c.coatingKey)?.title || c.coatingKey;
+  const backingTitle = BACKINGS.find(x=>x.key===c.backingKey)?.title || c.backingKey;
+  const text = [
+    `แผ่นใหญ่: ${c.sheet.w}×${c.sheet.h} ซม.`,
+    `ขนาดชิ้นงาน: ${c.w}×${c.h} ซม. × ${c.qty} ชิ้น`,
+    `พื้นที่รวม: ${fmt2(c.totalSqm)} ตร.ม.`,
+    c.yieldInfo ? `ตัดได้: ${c.yieldInfo.perSheet} ชิ้น/แผ่น (ใช้ ${c.yieldInfo.sheetsNeeded} แผ่น)` : null,
+    `วัสดุพิมพ์: ${materialTitle}`,
+    `การเคลือบ: ${coatingTitle}`,
+    `ไดคัท: ${c.dieCutChecked ? 'มี' : 'ไม่มี'}`,
+    `พื้นหลัง/ฐาน: ${backingTitle}`,
+    `— — —`,
+    `ราคารวมทั้งหมด: ${fmt(c.total)} บาท`,
+  ].filter(Boolean).join('\n');
+
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = event.target.closest('button');
+    const original = btn.textContent;
+    btn.textContent = '✅';
+    btn.title = 'คัดลอกแล้ว';
+    setTimeout(()=>{ btn.textContent = original; btn.title = 'คัดลอกสรุป'; }, 1500);
+  }).catch(()=>{
+    alert(text);
+  });
+}
+
+// init
+renderMaterials();
+renderCoatings();
+renderBackings();
+updateDieCutNote();
+loadAdminFields();
+bindEvents();
+document.querySelectorAll('input[name="sizePreset"]')[0].checked = true;
+compute();
 </script>
 </body>
 </html>
