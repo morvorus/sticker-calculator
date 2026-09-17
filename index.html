@@ -891,7 +891,16 @@ function compute(){
   const perPiece = qty > 0 ? total / qty : 0;
   const codeOk = hasValidAccessCode();
   updateAdminLock();
-  const displayTotal = codeOk ? total : 0;
+  loadAdminFields(); // รีเฟรชค่าฟิลด์ตั้งราคาให้ตรงกับสถานะรหัสล่าสุด (โชว์ค่าจริงเมื่อปลดล็อกแล้ว/ว่างเมื่อยังล็อก)
+
+  // ขนาดชิ้นงานต้องใส่ลงแผ่นใหญ่ได้จริง (เช็คแบบเดียวกับ renderCutPreview) — ถ้าใส่ไม่ได้
+  // ห้ามแสดงราคาจริง เพราะเป็นงานที่ผลิตไม่ได้จริง
+  let fitsOk = true;
+  if(sheet.w && sheet.h && job.w && job.h){
+    fitsOk = computeNesting(sheet, job).fits;
+  }
+
+  const displayTotal = (codeOk && fitsOk) ? total : 0;
 
   // render summary (only totals — no per-item price breakdown)
   const sizeText = (w&&h) ? `${w}×${h} ซม.` : '– × – ซม.';
@@ -903,19 +912,34 @@ function compute(){
   document.getElementById('bbSize').textContent = sizeText;
   document.getElementById('bbQty').textContent = qtyText;
   document.getElementById('bbArea').textContent = areaText;
-  document.getElementById('bbTotal').innerHTML = `${fmt(displayTotal)}<small>บาท</small>`;
+  document.getElementById('bbTotal').innerHTML = fitsOk
+    ? `${fmt(displayTotal)}<small>บาท</small>`
+    : `⚠️ ใส่ไม่ได้<small></small>`;
 
   document.getElementById('pSheet').textContent = sheetText;
   document.getElementById('pSize').textContent = sizeText;
   document.getElementById('pQty').textContent = qtyText;
   document.getElementById('pArea').textContent = areaText;
   document.getElementById('pYield').textContent = yieldText;
-  document.getElementById('pTotal').textContent = `${fmt(displayTotal)} บาท`;
+  document.getElementById('pTotal').textContent = fitsOk
+    ? `${fmt(displayTotal)} บาท`
+    : '⚠️ ขนาดชิ้นงานใหญ่กว่าแผ่น ใส่ไม่ได้';
 
   const warningEl = document.getElementById('stickerAccessWarning');
   if (warningEl) warningEl.style.display = codeOk ? 'none' : 'block';
 
-  window._lastCalc = {w,h,qty,totalSqm,sheet,materialKey,materialCost,coatingKey,coatingCost,dieCutChecked,dieCutCost,backingKey,backingCost,total:displayTotal,perPiece,yieldInfo,codeOk};
+  // เมื่อยังไม่ใส่รหัส ห้ามให้ค่าใช้จ่ายจริงของแต่ละองค์ประกอบรั่วไหลผ่าน window._lastCalc
+  // (แม้ total จะถูกซ่อนแล้ว แต่ materialCost/coatingCost/... ที่เหลือยังคำนวณจากราคาจริงอยู่)
+  window._lastCalc = {
+    w, h, qty, totalSqm, sheet,
+    materialKey, materialCost: (codeOk && fitsOk) ? materialCost : 0,
+    coatingKey, coatingCost: (codeOk && fitsOk) ? coatingCost : 0,
+    dieCutChecked, dieCutCost: (codeOk && fitsOk) ? dieCutCost : 0,
+    backingKey, backingCost: (codeOk && fitsOk) ? backingCost : 0,
+    total: displayTotal,
+    perPiece: (codeOk && fitsOk) ? perPiece : 0,
+    yieldInfo, codeOk, fitsOk
+  };
 }
 
 function bindEvents(){
@@ -983,6 +1007,17 @@ function restoreSelection(name, value){
 }
 
 function loadAdminFields(){
+  // ค่าตั้งราคาจริงต้องไม่ถูกใส่ลง DOM ตอนที่ยังไม่ปลดล็อกด้วยรหัส เพราะอ่านได้ตรงๆ
+  // ผ่าน document.getElementById(...).value แม้พาเนลจะถูกล็อกไม่ให้เปิดดูก็ตาม
+  if(!hasValidAccessCode()){
+    ['cfg_hpWhite','cfg_hpClear','cfg_3m','cfg_lg','cfg_filmCoat','cfg_stkCoat',
+     'cfg_dieCut','cfg_futureBoard','cfg_plaswoodPartial','cfg_plaswoodFull',
+     'cfg_acrylicPartial','cfg_acrylicFull'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.value = '';
+    });
+    return;
+  }
   document.getElementById('cfg_hpWhite').value = P.hpWhite;
   document.getElementById('cfg_hpClear').value = P.hpClear;
   document.getElementById('cfg_3m').value = P.m3;
@@ -1028,7 +1063,24 @@ function resetAll(){
   document.querySelectorAll('input[name="backing"]')[0].checked = true;
   document.querySelectorAll('input[name="finish"]').forEach(r=>r.checked=false);
   document.getElementById('dieCut').checked = false;
+
+  // "เริ่มใหม่" ต้องล็อกกลับให้เหมือนเปิดหน้าใหม่จริงๆ: ล้างรหัสผ่าน, ปิดพาเนลตั้งราคา,
+  // และคืนราคาทั้งหมดกลับเป็นค่าเริ่มต้น (ก่อนหน้านี้ถ้าเคยปลดล็อก+แก้ราคาไว้ สถานะจะค้างอยู่)
+  document.getElementById('stickerAccessCode').value = '';
+  P = {...DEFAULT_PRICES};
+  const prevMaterial = getActiveOptGroup('material');
+  const prevCoating = getActiveOptGroup('coating');
+  const prevBacking = getActiveOptGroup('backing');
+  renderMaterials();
+  renderCoatings();
+  renderBackings();
+  updateDieCutNote();
+  restoreSelection('material', prevMaterial);
+  restoreSelection('coating', prevCoating);
+  restoreSelection('backing', prevBacking);
+
   compute();
+  updateAdminLock();
 }
 
 function copySummary(){
