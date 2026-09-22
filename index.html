@@ -110,7 +110,11 @@
   .access-code-card{background:#fbf5ea;border:1px solid #eddcb8;}
   .access-warning{
     margin-top:12px;padding:10px 12px;border:1px solid #D79A28;border-radius:9px;
-    background:#FFF5D6;color:#684A0A;font-size:12.5px;line-height:1.5;
+    background:#FFF5D6;color:#684A0A;font-size:12.5px;line-height:1.5;display:none;
+  }
+  .access-ok{
+    margin-top:12px;padding:9px 12px;border:1px solid #b7d9c4;border-radius:9px;
+    background:#eaf6ee;color:#1a6b45;font-size:12.5px;font-weight:600;line-height:1.5;display:none;
   }
   .custom-size-box{
     margin-top:12px;padding:14px;background:var(--gray-50);border-radius:10px;border:1.5px dashed var(--gray-200);
@@ -259,21 +263,6 @@
 </div>
 
 <div class="wrap">
-
-      <!-- ACCESS CODE (required to see the final price — same gate as the paper-cut tool) -->
-      <div class="card access-code-card">
-        <h2><span class="step-num">🔒</span>รหัสสำหรับคำนวณราคา</h2>
-        <p class="sub">กรอกรหัสให้ถูกต้องเพื่อดูราคารวมจริง</p>
-        <div class="field-row" style="margin-top:0;">
-          <div class="field" style="max-width:220px;">
-            <label for="stickerAccessCode">รหัสสำหรับคำนวณ</label>
-            <input type="password" id="stickerAccessCode" maxlength="20" autocomplete="off" spellcheck="false" placeholder="กรอกรหัส">
-          </div>
-        </div>
-        <div class="access-warning" id="stickerAccessWarning" style="display:none;">
-          <b>ยังไม่แสดงราคาจริง</b> — กรุณากรอกรหัสสำหรับคำนวณให้ถูกต้อง ราคาด้านล่างเป็นเพียงตัวอย่าง (0 บาท) จนกว่าจะกรอกรหัสถูกต้อง
-        </div>
-      </div>
 
       <!-- STEP 1: SHEET SIZE -->
       <div class="card">
@@ -425,6 +414,22 @@
         <span class="value" id="pTotal">0 บาท</span>
       </div>
     </div>
+
+  <!-- ACCESS CODE - เฉพาะตอนจะเปิดแก้ไขราคาหลังบ้านเท่านั้น ไม่เกี่ยวกับการดูราคารวมด้านบน -->
+  <div class="card access-code-card">
+    <h2><span class="step-num">🔒</span>รหัสสำหรับแก้ไขราคา (หลังบ้าน)</h2>
+    <p class="sub">กรอกรหัสให้ถูกต้องเฉพาะตอนต้องการเปิดแก้ไขราคาวัสดุด้านล่างเท่านั้น ไม่กรอกก็ดูราคารวมได้ตามปกติ</p>
+    <div class="field-row" style="margin-top:0;">
+      <div class="field" style="max-width:220px;">
+        <label for="stickerAccessCode">รหัสสำหรับแก้ไขหลังบ้าน</label>
+        <input type="password" id="stickerAccessCode" maxlength="20" autocomplete="off" spellcheck="false" placeholder="กรอกรหัส">
+      </div>
+    </div>
+    <div class="access-warning" id="stickerAccessWarning">
+      <b>ยังไม่ปลดล็อก</b> — กรุณากรอกรหัสให้ถูกต้องเพื่อเปิดแก้ไขราคาด้านล่าง
+    </div>
+    <div class="access-ok" id="stickerAccessOk">✓ รหัสถูกต้อง — เปิดแก้ไขราคาได้แล้ว</div>
+  </div>
 
   <!-- ADMIN / BACKEND -->
   <details class="admin" id="adminPanel">
@@ -900,7 +905,7 @@ function compute(){
     fitsOk = computeNesting(sheet, job).fits;
   }
 
-  const displayTotal = (codeOk && fitsOk) ? total : 0;
+  const displayTotal = fitsOk ? total : 0;
 
   // render summary (only totals — no per-item price breakdown)
   const sizeText = (w&&h) ? `${w}×${h} ซม.` : '– × – ซม.';
@@ -926,18 +931,22 @@ function compute(){
     : '⚠️ ขนาดชิ้นงานใหญ่กว่าแผ่น ใส่ไม่ได้';
 
   const warningEl = document.getElementById('stickerAccessWarning');
-  if (warningEl) warningEl.style.display = codeOk ? 'none' : 'block';
+  const okEl = document.getElementById('stickerAccessOk');
+  const codeEntered = document.getElementById('stickerAccessCode').value.trim().length > 0;
+  if (warningEl) warningEl.style.display = (!codeOk && codeEntered) ? 'block' : (codeOk ? 'none' : 'block');
+  if (okEl) okEl.style.display = codeOk ? 'block' : 'none';
+  if (warningEl && codeOk) warningEl.style.display = 'none';
 
-  // เมื่อยังไม่ใส่รหัส ห้ามให้ค่าใช้จ่ายจริงของแต่ละองค์ประกอบรั่วไหลผ่าน window._lastCalc
-  // (แม้ total จะถูกซ่อนแล้ว แต่ materialCost/coatingCost/... ที่เหลือยังคำนวณจากราคาจริงอยู่)
+  // access code ด้านล่างตอนนี้ใช้เฉพาะปลดล็อกแผงแก้ไขราคาหลังบ้านเท่านั้น ไม่เกี่ยวกับการแสดงราคารวมด้านบนแล้ว
+  // (ขนาดที่ใส่ไม่ได้จริง — fitsOk เป็นเท็จ — ยังต้องซ่อนราคา เพราะเป็นงานที่ผลิตไม่ได้จริง ไม่เกี่ยวกับรหัส)
   window._lastCalc = {
     w, h, qty, totalSqm, sheet,
-    materialKey, materialCost: (codeOk && fitsOk) ? materialCost : 0,
-    coatingKey, coatingCost: (codeOk && fitsOk) ? coatingCost : 0,
-    dieCutChecked, dieCutCost: (codeOk && fitsOk) ? dieCutCost : 0,
-    backingKey, backingCost: (codeOk && fitsOk) ? backingCost : 0,
+    materialKey, materialCost: fitsOk ? materialCost : 0,
+    coatingKey, coatingCost: fitsOk ? coatingCost : 0,
+    dieCutChecked, dieCutCost: fitsOk ? dieCutCost : 0,
+    backingKey, backingCost: fitsOk ? backingCost : 0,
     total: displayTotal,
-    perPiece: (codeOk && fitsOk) ? perPiece : 0,
+    perPiece: fitsOk ? perPiece : 0,
     yieldInfo, codeOk, fitsOk
   };
 }
